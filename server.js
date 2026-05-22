@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const mongoose = require('mongoose');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const JWT_SECRET = process.env.JWT_SECRET || 'researchconnect_dev_secret_2026';
@@ -22,6 +23,37 @@ mongoose.connect(MONGODB_URI)
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ─── Rate Limiters ───────────────────────────────────────────────────────────
+
+// Broad safety net: all /api/* routes — 200 req / 15 min per IP
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests', messages: ['Too many requests from this IP, please try again later'] }
+});
+
+// Registration: 5 attempts / 15 min per IP — limits mass account creation
+const registerLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests', messages: ['Too many registration attempts from this IP, please try again in 15 minutes'] }
+});
+
+// Login: 10 attempts / 15 min per IP — limits brute-force password guessing
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests', messages: ['Too many login attempts from this IP, please try again in 15 minutes'] }
+});
+
+app.use('/api/', apiLimiter);
 
 // ─── Validation Helpers ───────────────────────────────────────────────────────
 
@@ -208,7 +240,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // ─── AUTH ROUTES ──────────────────────────────────────────────────────────────
 
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', registerLimiter, async (req, res) => {
   try {
     const { email = '', password = '', firstName = '', lastName = '' } = trim(req.body || {});
 
@@ -238,7 +270,7 @@ app.post('/api/auth/register', async (req, res) => {
   } catch (e) { handleError(res, e); }
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', loginLimiter, async (req, res) => {
   try {
     const { email = '', password = '' } = trim(req.body || {});
 

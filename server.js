@@ -397,6 +397,91 @@ app.delete('/api/publications/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
+// ─── PROJECT ROUTES ──────────────────────────────────────────────────────────
+
+const projectSchema = new mongoose.Schema({
+  user_id: { type: String, required: true },
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  field: { type: String, default: '' },
+  status: { type: String, enum: ['ongoing', 'completed', 'seeking-collaborators'], default: 'ongoing' },
+  created_at: { type: Date, default: Date.now }
+});
+const Project = mongoose.model('Project', projectSchema);
+
+app.get('/api/projects', async (req, res) => {
+  try {
+    const { field, status, userId, limit = 30, offset = 0 } = req.query;
+    const query = {};
+    if (field) query.field = new RegExp(field, 'i');
+    if (status) query.status = status;
+    if (userId) query.user_id = userId;
+    const total = await Project.countDocuments(query);
+    const results = await Project.find(query).sort({ created_at: -1 }).skip(+offset).limit(+limit);
+    const projects = await Promise.all(results.map(async p => {
+      const owner = await User.findById(p.user_id).catch(() => null);
+      return { id: p._id, title: p.title, description: p.description, field: p.field, status: p.status, createdAt: p.created_at, owner: owner ? { id: owner._id, firstName: owner.first_name, lastName: owner.last_name, institution: owner.institution, position: owner.position } : null };
+    }));
+    res.json({ projects, total, hasMore: (+offset + +limit) < total });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.get('/api/projects/:id', async (req, res) => {
+  try {
+    const p = await Project.findById(req.params.id);
+    if (!p) return res.status(404).json({ message: 'Not found' });
+    const owner = await User.findById(p.user_id).catch(() => null);
+    res.json({ id: p._id, title: p.title, description: p.description, field: p.field, status: p.status, createdAt: p.created_at, userId: p.user_id, owner: owner ? { id: owner._id, firstName: owner.first_name, lastName: owner.last_name, institution: owner.institution, position: owner.position } : null });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/projects', auth, async (req, res) => {
+  try {
+    const { title, description, field, status } = req.body;
+    if (!title || !description) return res.status(400).json({ message: 'Title and description required' });
+    const project = await Project.create({ user_id: req.user.userId, title, description, field: field || '', status: status || 'ongoing' });
+    res.status(201).json({ message: 'Project created', id: project._id });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.put('/api/projects/:id', auth, async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) return res.status(404).json({ message: 'Not found' });
+    if (project.user_id !== req.user.userId) return res.status(403).json({ message: 'Forbidden' });
+    const { title, description, field, status } = req.body;
+    if (title !== undefined) project.title = title;
+    if (description !== undefined) project.description = description;
+    if (field !== undefined) project.field = field;
+    if (status !== undefined) project.status = status;
+    await project.save();
+    res.json({ message: 'Project updated' });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.delete('/api/projects/:id', auth, async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) return res.status(404).json({ message: 'Not found' });
+    if (project.user_id !== req.user.userId) return res.status(403).json({ message: 'Forbidden' });
+    await project.deleteOne();
+    res.json({ message: 'Deleted' });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/projects/:id/collaborate', auth, async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) return res.status(404).json({ message: 'Not found' });
+    if (project.user_id === req.user.userId) return res.status(400).json({ message: 'Cannot collaborate on your own project' });
+    const sender = await User.findById(req.user.userId);
+    const senderName = sender ? `${sender.first_name} ${sender.last_name}`.trim() : 'A researcher';
+    const content = `Hi! I came across your project "${project.title}" and I'm interested in collaborating. I'd love to discuss how we might work together. Looking forward to hearing from you!`;
+    const msg = await Message.create({ sender_id: req.user.userId, recipient_id: project.user_id, content });
+    res.status(201).json({ message: 'Collaboration request sent', id: msg._id });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 // ─── Serve SPA ────────────────────────────────────────────────────────────────
 
 app.get('*', (req, res) => {

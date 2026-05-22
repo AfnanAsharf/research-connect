@@ -309,8 +309,9 @@
         <h3 style="font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:14px">Quick Actions</h3>
         <div class="card" style="display:flex;flex-direction:column;gap:10px">
           <button class="btn btn-ghost" onclick="navigate('researchers')" style="justify-content:flex-start">🔍 Find researchers</button>
+          <button class="btn btn-ghost" onclick="navigate('projects')" style="justify-content:flex-start">🧪 Browse projects</button>
           <button class="btn btn-ghost" onclick="navigate('jobs')" style="justify-content:flex-start">💼 Browse jobs</button>
-          <button class="btn btn-ghost" onclick="openJobModal()" style="justify-content:flex-start">➕ Post a job</button>
+          <button class="btn btn-ghost" onclick="openProjectModal()" style="justify-content:flex-start">➕ Post a project</button>
           <button class="btn btn-ghost" onclick="navigate('messages')" style="justify-content:flex-start">💬 Messages</button>
         </div>
       </div>
@@ -428,10 +429,63 @@
     <div id="chatContent"></div>
   </div>
 
+  <!-- PROJECTS PAGE -->
+  <div class="page" id="page-projects">
+    <div class="section-head">
+      <h1>Research Projects</h1>
+      <span class="count" id="projectCount"></span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+      <div class="filter-bar" style="margin-bottom:0;flex:1">
+        <input id="pjField" type="text" placeholder="Research field" oninput="debounceLoadProjects()">
+        <select id="pjStatus" onchange="loadProjects()">
+          <option value="">All statuses</option>
+          <option value="seeking-collaborators">Seeking Collaborators</option>
+          <option value="ongoing">Ongoing</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-sm" id="postProjectBtn" onclick="openProjectModal()" style="display:none;white-space:nowrap">+ Post Project</button>
+    </div>
+    <div id="projectList"></div>
+  </div>
+
+  <!-- MY PROJECTS PAGE -->
+  <div class="page" id="page-my-projects">
+    <div class="section-head">
+      <h1>My Projects</h1>
+      <button class="btn btn-primary btn-sm" onclick="openProjectModal()">+ New Project</button>
+    </div>
+    <div id="myProjectList"></div>
+  </div>
+
 </main>
 </div>
 
 <!-- ── MODALS ── -->
+
+<div class="modal-overlay" id="projectModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('projectModal')">✕</button>
+    <h2 id="projectModalTitle">Post a Project</h2>
+    <div id="projectModalError" class="alert alert-error" style="display:none"></div>
+    <div class="form-group"><label>Project Title</label><input id="pmTitle" placeholder="e.g. CRISPR-based gene therapy for rare diseases"></div>
+    <div class="form-group"><label>Description</label><textarea id="pmDesc" rows="5" placeholder="Describe your project, goals, methods, and what kind of collaborators you're looking for..."></textarea></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group"><label>Research Field</label><input id="pmField" placeholder="e.g. Genomics, ML, Physics"></div>
+      <div class="form-group"><label>Status</label>
+        <select id="pmStatus">
+          <option value="ongoing">Ongoing</option>
+          <option value="seeking-collaborators">Seeking Collaborators</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+    </div>
+    <input type="hidden" id="pmEditId">
+    <button class="btn btn-primary" onclick="submitProject()" style="width:100%;justify-content:center">Post Project</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="jobModal">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('jobModal')">✕</button>
@@ -531,6 +585,8 @@ function navigate(page, extra) {
   if (page === 'home') renderHomeCTA();
   if (page === 'researchers') loadResearchers();
   if (page === 'jobs') { loadJobs(); if (token) document.getElementById('postJobBtn').style.display = ''; }
+  if (page === 'projects') { loadProjects(); if (token) document.getElementById('postProjectBtn').style.display = ''; }
+  if (page === 'my-projects') loadMyProjects();
   if (page === 'dashboard') loadDashboard();
   if (page === 'profile') loadProfile();
   if (page === 'messages') loadMessages();
@@ -544,15 +600,17 @@ function renderNav() {
   if (token) {
     nav.innerHTML = `
       <a href="#" onclick="navigate('dashboard')" class="${currentPage==='dashboard'?'active':''}">Dashboard</a>
-      <a href="#" onclick="navigate('researchers')" class="${currentPage==='researchers'?'active':''}">Researchers</a>
-      <a href="#" onclick="navigate('jobs')" class="${currentPage==='jobs'?'active':''}">Jobs</a>
-      <a href="#" onclick="navigate('messages')" class="${currentPage==='messages'?'active':''}">Messages</a>
+      <a href="#" onclick="navigate('researchers')" class="${currentPage==='researchers'||currentPage==='researcher-profile'?'active':''}">Researchers</a>
+      <a href="#" onclick="navigate('projects')" class="${currentPage==='projects'||currentPage==='my-projects'?'active':''}">Projects</a>
+      <a href="#" onclick="navigate('jobs')" class="${currentPage==='jobs'||currentPage==='job-detail'?'active':''}">Jobs</a>
+      <a href="#" onclick="navigate('messages')" class="${currentPage==='messages'||currentPage==='chat'?'active':''}">Messages</a>
       <a href="#" onclick="navigate('profile')" class="${currentPage==='profile'?'active':''}">Profile</a>
       <button class="btn btn-danger btn-sm" onclick="doLogout()" style="margin-left:8px">Logout</button>
     `;
   } else {
     nav.innerHTML = `
       <a href="#" onclick="navigate('researchers')">Researchers</a>
+      <a href="#" onclick="navigate('projects')">Projects</a>
       <a href="#" onclick="navigate('jobs')">Jobs</a>
       <a href="#" onclick="navigate('login')">Sign In</a>
       <button class="btn btn-primary btn-sm" onclick="navigate('signup')" style="margin-left:4px">Get Started</button>
@@ -1056,6 +1114,145 @@ async function sendQuickMsg() {
     sv('msgContent', '');
     alert('Message sent!');
   } catch(e) { alert(e.message); }
+}
+
+// ─── PROJECTS ─────────────────────────────────────────────────────────────────
+
+let pjDebounce;
+function debounceLoadProjects() { clearTimeout(pjDebounce); pjDebounce = setTimeout(loadProjects, 400); }
+
+const STATUS_META = {
+  'seeking-collaborators': { label: 'Seeking Collaborators', cls: 'tag-green' },
+  'ongoing':               { label: 'Ongoing',               cls: 'tag-blue' },
+  'completed':             { label: 'Completed',             cls: 'tag-purple' }
+};
+
+function projectCard(p, showOwner = true, isOwner = false) {
+  const sm = STATUS_META[p.status] || { label: p.status, cls: 'tag-blue' };
+  const ownerLine = showOwner && p.owner
+    ? `<span style="cursor:pointer;color:var(--accent)" onclick="navigate('researcher-profile','${p.owner.id}')">${p.owner.firstName} ${p.owner.lastName}</span>${p.owner.institution ? ' · ' + p.owner.institution : ''}`
+    : '';
+  const collab = !isOwner && token
+    ? `<button class="btn btn-green btn-sm" onclick="requestCollaborate('${p.id}','${p.title.replace(/'/g,"\\'")}')">🤝 Request to Collaborate</button>`
+    : '';
+  const edit = isOwner
+    ? `<button class="btn btn-ghost btn-sm" onclick="openEditProject('${p.id}')">Edit</button>
+       <button class="btn btn-danger btn-sm" onclick="deleteProject('${p.id}')">Delete</button>`
+    : '';
+  return `
+    <div class="card" style="margin-bottom:16px" id="proj-${p.id}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+            <h3 style="font-family:var(--font-head);font-size:17px;font-weight:700;margin:0">${p.title}</h3>
+            <span class="tag ${sm.cls}">${sm.label}</span>
+            ${p.field ? `<span class="tag tag-blue">${p.field}</span>` : ''}
+          </div>
+          ${showOwner && ownerLine ? `<div style="font-size:13px;color:var(--muted);margin-bottom:10px">${ownerLine}</div>` : ''}
+          <p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:12px">${p.description.length > 280 ? p.description.slice(0,280) + '…' : p.description}</p>
+          <div style="font-size:12px;color:var(--muted)">${timeAgo(p.createdAt)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0">
+          ${collab}
+          ${edit}
+        </div>
+      </div>
+    </div>`;
+}
+
+async function loadProjects() {
+  const list = document.getElementById('projectList');
+  list.innerHTML = '<div class="spinner"></div>';
+  const params = new URLSearchParams({ limit: 30 });
+  const f = v('pjField'); if (f) params.set('field', f);
+  const s = v('pjStatus'); if (s) params.set('status', s);
+  try {
+    const d = await api('/projects?' + params);
+    document.getElementById('projectCount').textContent = d.total + ' project' + (d.total !== 1 ? 's' : '');
+    if (!d.projects.length) {
+      list.innerHTML = `<div class="empty"><div class="empty-icon">🧪</div><h3>No projects found</h3><p>Be the first to post a research project</p></div>`;
+      return;
+    }
+    list.innerHTML = d.projects.map(p => projectCard(p, true, currentUser?.id && p.owner?.id?.toString() === currentUser.id?.toString())).join('');
+  } catch(e) { list.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+async function loadMyProjects() {
+  const list = document.getElementById('myProjectList');
+  list.innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('/projects?userId=' + currentUser.id + '&limit=50');
+    if (!d.projects.length) {
+      list.innerHTML = `<div class="empty"><div class="empty-icon">🧪</div><h3>No projects yet</h3><p>Post your first research project to find collaborators</p><br><button class="btn btn-primary" onclick="openProjectModal()">+ Post a Project</button></div>`;
+      return;
+    }
+    list.innerHTML = d.projects.map(p => projectCard(p, false, true)).join('');
+  } catch(e) { list.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+function openProjectModal() {
+  if (!token) { navigate('login'); return; }
+  sv('pmTitle', ''); sv('pmDesc', ''); sv('pmField', ''); sv('pmEditId', '');
+  document.getElementById('pmStatus').value = 'ongoing';
+  document.getElementById('projectModalTitle').textContent = 'Post a Project';
+  document.querySelector('#projectModal .btn-primary').textContent = 'Post Project';
+  document.getElementById('projectModalError').style.display = 'none';
+  document.getElementById('projectModal').classList.add('open');
+}
+
+async function openEditProject(id) {
+  if (!token) return;
+  try {
+    const p = await api('/projects/' + id);
+    sv('pmTitle', p.title); sv('pmDesc', p.description); sv('pmField', p.field); sv('pmEditId', id);
+    document.getElementById('pmStatus').value = p.status;
+    document.getElementById('projectModalTitle').textContent = 'Edit Project';
+    document.querySelector('#projectModal .btn-primary').textContent = 'Save Changes';
+    document.getElementById('projectModalError').style.display = 'none';
+    document.getElementById('projectModal').classList.add('open');
+  } catch(e) { alert(e.message); }
+}
+
+async function submitProject() {
+  const title = v('pmTitle'), desc = v('pmDesc'), field = v('pmField');
+  const status = document.getElementById('pmStatus').value;
+  const editId = v('pmEditId');
+  const errEl = document.getElementById('projectModalError');
+  errEl.style.display = 'none';
+  if (!title || !desc) { errEl.textContent = 'Title and description are required.'; errEl.style.display = ''; return; }
+  try {
+    const body = JSON.stringify({ title, description: desc, field, status });
+    if (editId) {
+      await api('/projects/' + editId, { method: 'PUT', body });
+    } else {
+      await api('/projects', { method: 'POST', body });
+    }
+    closeModal('projectModal');
+    if (currentPage === 'projects') loadProjects();
+    if (currentPage === 'my-projects') loadMyProjects();
+  } catch(e) { errEl.textContent = e.message; errEl.style.display = ''; }
+}
+
+async function deleteProject(id) {
+  if (!confirm('Delete this project?')) return;
+  try {
+    await api('/projects/' + id, { method: 'DELETE' });
+    document.getElementById('proj-' + id)?.remove();
+  } catch(e) { alert(e.message); }
+}
+
+async function requestCollaborate(projectId, projectTitle) {
+  if (!token) { navigate('login'); return; }
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    await api('/projects/' + projectId + '/collaborate', { method: 'POST' });
+    btn.textContent = '✓ Request Sent';
+    btn.classList.remove('btn-green'); btn.classList.add('btn-ghost');
+  } catch(e) {
+    btn.disabled = false; btn.textContent = '🤝 Request to Collaborate';
+    alert(e.message);
+  }
 }
 
 // ─── MODALS ───────────────────────────────────────────────────────────────────

@@ -782,8 +782,12 @@ async function loadResearcherProfile(id) {
   const el = document.getElementById('researcherProfileContent');
   el.innerHTML = '<div class="spinner"></div>';
   try {
-    const r = await api('/researchers/' + id);
-    const pubs = await api('/publications/' + id);
+    const [r, pubs, projs] = await Promise.all([
+      api('/researchers/' + id),
+      api('/publications/' + id),
+      api('/projects?userId=' + id + '&limit=50')
+    ]);
+    const isOwnProfile = currentUser?.id?.toString() === id?.toString();
     el.innerHTML = `
       <button class="btn btn-ghost btn-sm" onclick="history.back()" style="margin-bottom:20px">← Back</button>
       <div class="card" style="margin-bottom:24px">
@@ -796,9 +800,10 @@ async function loadResearcherProfile(id) {
             <div style="display:flex;gap:20px;font-size:13px;color:var(--muted)">
               <span>H-Index: <strong style="color:var(--text)">${r.hIndex||0}</strong></span>
               <span>Publications: <strong style="color:var(--text)">${r.totalPublications||0}</strong></span>
+              <span>Projects: <strong style="color:var(--text)">${projs.total||0}</strong></span>
             </div>
           </div>
-          ${token && currentUser?.id !== id ? `
+          ${token && !isOwnProfile ? `
             <div style="margin-left:auto;display:flex;gap:8px">
               <button class="btn btn-primary btn-sm" onclick="openMsgModal('${id}','${r.firstName} ${r.lastName}')">Message</button>
               <button class="btn btn-ghost btn-sm" onclick="sendConnectionReq('${id}')">Connect</button>
@@ -807,6 +812,31 @@ async function loadResearcherProfile(id) {
         </div>
         ${r.bio ? `<p style="color:var(--muted);line-height:1.7">${r.bio}</p>` : ''}
       </div>
+
+      ${projs.projects?.length ? `
+        <div class="card" style="margin-bottom:24px">
+          <h3 style="font-family:var(--font-head);font-weight:700;margin-bottom:20px">Research Projects (${projs.total})</h3>
+          ${projs.projects.map(p => {
+            const sm = STATUS_META[p.status] || { label: p.status, cls: 'tag-blue' };
+            const canCollab = token && !isOwnProfile;
+            return `
+              <div style="padding:16px 0;border-bottom:1px solid var(--border)">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+                  <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+                      <span style="font-family:var(--font-head);font-weight:700;font-size:15px">${p.title}</span>
+                      <span class="tag ${sm.cls}">${sm.label}</span>
+                      ${p.field ? `<span class="tag tag-blue">${p.field}</span>` : ''}
+                    </div>
+                    <p style="font-size:14px;color:var(--muted);line-height:1.6;margin:0">${p.description.length > 220 ? p.description.slice(0,220)+'…' : p.description}</p>
+                  </div>
+                  ${canCollab ? `<button class="btn btn-green btn-sm" style="flex-shrink:0" onclick="requestCollaborate('${p.id}','${p.title.replace(/'/g,"\\'")}')">🤝 Request to Collaborate</button>` : ''}
+                </div>
+              </div>`;
+          }).join('')}
+        </div>
+      ` : ''}
+
       ${pubs.publications?.length ? `
         <div class="card">
           <h3 style="font-family:var(--font-head);font-weight:700;margin-bottom:16px">Publications (${pubs.total})</h3>

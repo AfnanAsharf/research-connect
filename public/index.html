@@ -394,10 +394,19 @@
             <div class="progress-bar"><div class="progress-bar-fill" id="profileBar" style="width:0%"></div></div>
           </div>
         </div>
-        <div class="card">
-          <h3 style="font-family:var(--font-head);font-weight:700;margin-bottom:16px;font-size:15px">Publications</h3>
-          <div id="pubList" style="margin-bottom:14px"></div>
-          <button class="btn btn-ghost btn-sm" onclick="openPubModal()">+ Add publication</button>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="display:flex;border-bottom:1px solid var(--border)">
+            <button id="tabPubs" onclick="switchProfileTab('pubs')" style="flex:1;padding:14px;background:none;border:none;border-bottom:2px solid var(--accent);color:var(--text);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer">Publications</button>
+            <button id="tabProjs" onclick="switchProfileTab('projs')" style="flex:1;padding:14px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer">My Projects</button>
+          </div>
+          <div id="tabPubsContent" style="padding:20px">
+            <div id="pubList" style="margin-bottom:14px"></div>
+            <button class="btn btn-ghost btn-sm" onclick="openPubModal()">+ Add publication</button>
+          </div>
+          <div id="tabProjsContent" style="padding:20px;display:none">
+            <div id="profileProjectList" style="margin-bottom:14px"></div>
+            <button class="btn btn-ghost btn-sm" onclick="openProjectModal()">+ Post a project</button>
+          </div>
         </div>
       </div>
       <div class="card">
@@ -951,6 +960,7 @@ async function loadProfile() {
     sv('pBio', u.bio); sv('pFields', (u.researchFields||[]).join(', '));
     sv('pHIndex', u.hIndex || 0);
     loadPubs(currentUser.id);
+    loadProfileProjects(currentUser.id);
   } catch(e) { console.error(e); }
 }
 
@@ -969,6 +979,57 @@ async function loadPubs(uid) {
       </div>
     `).join('');
   } catch(e) { el.innerHTML = ''; }
+}
+
+function switchProfileTab(tab) {
+  const isPubs = tab === 'pubs';
+  document.getElementById('tabPubsContent').style.display = isPubs ? '' : 'none';
+  document.getElementById('tabProjsContent').style.display = isPubs ? 'none' : '';
+  document.getElementById('tabPubs').style.borderBottomColor = isPubs ? 'var(--accent)' : 'transparent';
+  document.getElementById('tabPubs').style.color = isPubs ? 'var(--text)' : 'var(--muted)';
+  document.getElementById('tabPubs').style.fontWeight = isPubs ? '600' : '500';
+  document.getElementById('tabProjs').style.borderBottomColor = isPubs ? 'transparent' : 'var(--accent)';
+  document.getElementById('tabProjs').style.color = isPubs ? 'var(--muted)' : 'var(--text)';
+  document.getElementById('tabProjs').style.fontWeight = isPubs ? '500' : '600';
+}
+
+async function loadProfileProjects(uid) {
+  const el = document.getElementById('profileProjectList');
+  if (!el) return;
+  try {
+    const d = await api('/projects?userId=' + uid + '&limit=50');
+    if (!d.projects.length) {
+      el.innerHTML = '<p style="color:var(--muted);font-size:14px">No projects yet. Post one to find collaborators!</p>';
+      return;
+    }
+    el.innerHTML = d.projects.map(p => {
+      const sm = STATUS_META[p.status] || { label: p.status, cls: 'tag-blue' };
+      return `
+        <div style="padding:12px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+                <span style="font-weight:500;font-size:14px">${p.title}</span>
+                <span class="tag ${sm.cls}" style="font-size:11px">${sm.label}</span>
+              </div>
+              ${p.field ? `<div style="color:var(--muted);font-size:12px">${p.field}</div>` : ''}
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0">
+              <button class="btn btn-ghost btn-sm" onclick="openEditProject('${p.id}')">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteProfileProject('${p.id}')">✕</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = ''; }
+}
+
+async function deleteProfileProject(id) {
+  if (!confirm('Delete this project?')) return;
+  try {
+    await api('/projects/' + id, { method: 'DELETE' });
+    loadProfileProjects(currentUser.id);
+  } catch(e) { alert(e.message); }
 }
 
 async function saveProfile() {
@@ -1230,6 +1291,7 @@ async function submitProject() {
     closeModal('projectModal');
     if (currentPage === 'projects') loadProjects();
     if (currentPage === 'my-projects') loadMyProjects();
+    if (currentPage === 'profile') loadProfileProjects(currentUser.id);
   } catch(e) { errEl.textContent = e.message; errEl.style.display = ''; }
 }
 

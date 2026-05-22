@@ -327,7 +327,18 @@
       <input id="rSearch" type="text" placeholder="🔍 Search by name or bio..." oninput="debounceLoadResearchers()">
       <input id="rField" type="text" placeholder="Research field (e.g. CRISPR)" oninput="debounceLoadResearchers()">
       <input id="rInstitution" type="text" placeholder="Institution" oninput="debounceLoadResearchers()">
+      <select id="rPosition" onchange="loadResearchers()">
+        <option value="">All positions</option>
+        <option value="PhD Student">PhD Student</option>
+        <option value="Postdoc">Postdoc</option>
+        <option value="Research Scientist">Research Scientist</option>
+        <option value="Assistant Professor">Assistant Professor</option>
+        <option value="Associate Professor">Associate Professor</option>
+        <option value="Professor">Professor</option>
+        <option value="Industry">Industry</option>
+      </select>
     </div>
+    <div id="activeFilters" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"></div>
     <div id="researcherList"></div>
   </div>
 
@@ -641,9 +652,13 @@ async function loadResearchers() {
   const s = v('rSearch'); if (s) params.set('search', s);
   const f = v('rField'); if (f) params.set('field', f);
   const i = v('rInstitution'); if (i) params.set('institution', i);
+  const p = v('rPosition'); if (p) params.set('position', p);
+
+  renderActiveFilters({ search: s, field: f, institution: i, position: p });
+
   try {
     const d = await api('/researchers?' + params);
-    document.getElementById('researcherCount').textContent = d.total + ' researchers';
+    document.getElementById('researcherCount').textContent = d.total + ' researcher' + (d.total !== 1 ? 's' : '');
     if (!d.researchers.length) {
       list.innerHTML = `<div class="empty"><div class="empty-icon">🔬</div><h3>No researchers found</h3><p>Try adjusting your search filters</p></div>`;
       return;
@@ -651,7 +666,7 @@ async function loadResearchers() {
     list.innerHTML = d.researchers.map(r => `
       <div class="card" style="margin-bottom:16px">
         <div class="researcher-card">
-          <div class="avatar" style="background:${avatarColor(r.firstName)}">${initials(r.firstName, r.lastName)}</div>
+          <div class="avatar" style="background:${avatarColor(r.firstName)};flex-shrink:0">${initials(r.firstName, r.lastName)}</div>
           <div class="info" style="flex:1">
             <h3 onclick="navigate('researcher-profile','${r.id}')">${r.firstName} ${r.lastName}</h3>
             <div class="meta">${r.position || '—'} ${r.institution ? '· ' + r.institution : ''}</div>
@@ -670,6 +685,30 @@ async function loadResearchers() {
       </div>
     `).join('');
   } catch(e) { list.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+function renderActiveFilters(filters) {
+  const wrap = document.getElementById('activeFilters');
+  if (!wrap) return;
+  const labels = { search: 'Search', field: 'Field', institution: 'Institution', position: 'Position' };
+  const clearMap = { search: 'rSearch', field: 'rField', institution: 'rInstitution', position: 'rPosition' };
+  const chips = Object.entries(filters)
+    .filter(([, val]) => val)
+    .map(([key, val]) => `
+      <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 12px;background:rgba(79,142,247,0.12);border:1px solid rgba(79,142,247,0.3);border-radius:20px;font-size:12px;color:var(--accent)">
+        <span style="color:var(--muted)">${labels[key]}:</span> ${val}
+        <button onclick="clearFilter('${clearMap[key]}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0 2px">×</button>
+      </span>
+    `).join('');
+  wrap.innerHTML = chips;
+}
+
+function clearFilter(inputId) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  if (el.tagName === 'SELECT') el.value = '';
+  else el.value = '';
+  loadResearchers();
 }
 
 async function loadResearcherProfile(id) {

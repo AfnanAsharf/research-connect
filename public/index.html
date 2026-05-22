@@ -579,7 +579,7 @@ async function api(path, opts = {}) {
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(API + '/api' + path, { headers, ...opts });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Request failed');
+  if (!res.ok) throw new Error(data.message || (data.messages && data.messages[0]) || data.error || 'Request failed');
   return data;
 }
 

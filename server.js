@@ -9,6 +9,7 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 
 const app = express();
+app.set('trust proxy', 1); // trust Replit's reverse proxy so rate limiters use real client IPs
 const JWT_SECRET = process.env.JWT_SECRET || 'researchconnect_dev_secret_2026';
 const MONGODB_URI = process.env.MONGODB_URI;
 

@@ -316,6 +316,7 @@
         </div>
       </div>
     </div>
+    <div id="dashPending" style="margin-top:24px"></div>
   </div>
 
   <!-- RESEARCHERS PAGE -->
@@ -570,6 +571,9 @@ let msgTargetId = null;
 let chatWithId = null;
 let chatWithName = null;
 let rDebounce, jDebounce;
+let myConnections = new Set();  // connected user IDs
+let pendingFrom   = new Map();  // userId → connectionId (incoming pending)
+let sentRequests  = new Set();  // user IDs I've sent outgoing requests to (session)
 
 const API = '';  // same origin
 
@@ -689,10 +693,15 @@ async function loadDashboard() {
     currentUser = { ...currentUser, ...u };
     document.getElementById('dashGreeting').textContent = `Hello, ${u.firstName || 'Researcher'} 👋`;
 
-    const [jobs, researchers] = await Promise.all([
+    const [jobs, researchers, conns, pending] = await Promise.all([
       api('/jobs?limit=1'),
-      api('/researchers?limit=1')
+      api('/researchers?limit=1'),
+      api('/connections'),
+      api('/connections/pending')
     ]);
+
+    myConnections = new Set(conns.connections || []);
+    pendingFrom   = new Map((pending.pending || []).map(p => [p.fromUserId, p.id]));
 
     document.getElementById('dashStats').innerHTML = `
       <div class="stat-card"><div class="stat-val">${researchers.total}</div><div class="stat-label">Researchers</div></div>
@@ -703,6 +712,41 @@ async function loadDashboard() {
     const pct = u.profileCompleteness || 0;
     document.getElementById('dashCompPct').textContent = pct + '%';
     document.getElementById('dashCompBar').style.width = pct + '%';
+
+    const pendingEl = document.getElementById('dashPending');
+    if (!pendingEl) return;
+    const reqs = pending.pending || [];
+    if (!reqs.length) { pendingEl.innerHTML = ''; return; }
+
+    const names = await Promise.all(
+      reqs.map(r => api('/researchers/' + r.fromUserId).catch(() => null))
+    );
+
+    pendingEl.innerHTML = `
+      <h3 style="font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:14px">
+        Pending Connection Requests
+        <span style="background:var(--accent);color:#fff;font-size:11px;padding:2px 8px;border-radius:20px;font-family:var(--font-body);font-weight:600;vertical-align:middle;margin-left:6px">${reqs.length}</span>
+      </h3>
+      <div class="card" style="padding:0;overflow:hidden">
+        ${reqs.map((r, i) => {
+          const p    = names[i];
+          const name = p ? `${p.firstName} ${p.lastName}` : 'Unknown Researcher';
+          const sub  = p ? [p.position, p.institution].filter(Boolean).join(' · ') : '';
+          return `
+            <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;${i < reqs.length - 1 ? 'border-bottom:1px solid var(--border)' : ''}">
+              <div class="avatar" style="background:${avatarColor(p?.firstName||'')};flex-shrink:0">${initials(p?.firstName||'?', p?.lastName||'')}</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:600;font-size:14px;cursor:pointer" onclick="navigate('researcher-profile','${r.fromUserId}')">${name}</div>
+                ${sub ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${sub}</div>` : ''}
+              </div>
+              <div style="display:flex;gap:8px;flex-shrink:0">
+                <button class="btn btn-green btn-sm" onclick="acceptConnection('${r.id}','${r.fromUserId}')">Accept</button>
+                <button class="btn btn-ghost btn-sm" onclick="rejectConnection('${r.id}')">Decline</button>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+    `;
   } catch(e) { console.error(e); }
 }
 
@@ -724,6 +768,14 @@ async function loadResearchers() {
   renderActiveFilters({ search: s, field: f, institution: i, position: p });
 
   try {
+    if (token) {
+      const [conns, pend] = await Promise.all([
+        api('/connections').catch(() => ({ connections: [] })),
+        api('/connections/pending').catch(() => ({ pending: [] }))
+      ]);
+      myConnections = new Set(conns.connections || []);
+      pendingFrom   = new Map((pend.pending || []).map(p => [p.fromUserId, p.id]));
+    }
     const d = await api('/researchers?' + params);
     document.getElementById('researcherCount').textContent = d.total + ' researcher' + (d.total !== 1 ? 's' : '');
     if (!d.researchers.length) {
@@ -747,6 +799,7 @@ async function loadResearchers() {
           <div style="display:flex;flex-direction:column;gap:8px">
             <button class="btn btn-ghost btn-sm" onclick="navigate('researcher-profile','${r.id}')">View</button>
             ${token && currentUser?.id !== r.id ? `<button class="btn btn-ghost btn-sm" onclick="openMsgModal('${r.id}','${r.firstName} ${r.lastName}')">Message</button>` : ''}
+            ${token && currentUser?.id !== r.id ? connectionBtn(r.id) : ''}
           </div>
         </div>
       </div>
@@ -782,11 +835,17 @@ async function loadResearcherProfile(id) {
   const el = document.getElementById('researcherProfileContent');
   el.innerHTML = '<div class="spinner"></div>';
   try {
-    const [r, pubs, projs] = await Promise.all([
+    const [r, pubs, projs, conns, pend] = await Promise.all([
       api('/researchers/' + id),
       api('/publications/' + id),
-      api('/projects?userId=' + id + '&limit=50')
+      api('/projects?userId=' + id + '&limit=50'),
+      token ? api('/connections').catch(() => ({ connections: [] })) : Promise.resolve({ connections: [] }),
+      token ? api('/connections/pending').catch(() => ({ pending: [] })) : Promise.resolve({ pending: [] })
     ]);
+    if (token) {
+      myConnections = new Set(conns.connections || []);
+      pendingFrom   = new Map((pend.pending || []).map(p => [p.fromUserId, p.id]));
+    }
     const isOwnProfile = currentUser?.id?.toString() === id?.toString();
     el.innerHTML = `
       <button class="btn btn-ghost btn-sm" onclick="history.back()" style="margin-bottom:20px">← Back</button>
@@ -806,7 +865,7 @@ async function loadResearcherProfile(id) {
           ${token && !isOwnProfile ? `
             <div style="margin-left:auto;display:flex;gap:8px">
               <button class="btn btn-primary btn-sm" onclick="openMsgModal('${id}','${r.firstName} ${r.lastName}')">Message</button>
-              <button class="btn btn-ghost btn-sm" onclick="sendConnectionReq('${id}')">Connect</button>
+              ${connectionBtn(id)}
             </div>
           ` : ''}
         </div>
@@ -853,11 +912,44 @@ async function loadResearcherProfile(id) {
   } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
 }
 
-async function sendConnectionReq(id) {
+function connectionBtn(userId) {
+  const id = String(userId);
+  if (myConnections.has(id))
+    return `<button class="btn btn-ghost btn-sm" disabled style="opacity:0.55;cursor:default">✓ Connected</button>`;
+  if (pendingFrom.has(id))
+    return `<button class="btn btn-green btn-sm" onclick="navigate('dashboard')" title="They sent you a request — go to dashboard to accept">Accept →</button>`;
+  if (sentRequests.has(id))
+    return `<button class="btn btn-ghost btn-sm" disabled style="opacity:0.55;cursor:default">Pending…</button>`;
+  return `<button class="btn btn-ghost btn-sm" id="connbtn-${id}" onclick="connectUser('${id}')">Connect</button>`;
+}
+
+async function connectUser(id) {
   if (!token) { navigate('login'); return; }
+  const btn = document.getElementById('connbtn-' + id);
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
   try {
     await api('/connections/' + id + '/request', { method: 'POST' });
-    alert('Connection request sent!');
+    sentRequests.add(String(id));
+    if (btn) { btn.textContent = 'Pending…'; btn.style.opacity = '0.55'; }
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Connect'; }
+    alert(e.message);
+  }
+}
+
+async function acceptConnection(connId, userId) {
+  try {
+    await api('/connections/' + connId, { method: 'PUT', body: JSON.stringify({ status: 'accepted' }) });
+    myConnections.add(String(userId));
+    pendingFrom.delete(String(userId));
+    loadDashboard();
+  } catch(e) { alert(e.message); }
+}
+
+async function rejectConnection(connId) {
+  try {
+    await api('/connections/' + connId, { method: 'PUT', body: JSON.stringify({ status: 'rejected' }) });
+    loadDashboard();
   } catch(e) { alert(e.message); }
 }
 

@@ -479,6 +479,25 @@ app.post('/api/jobs/:id/apply', auth, async (req, res) => {
   } catch (e) { handleError(res, e); }
 });
 
+app.get('/api/jobs/applications/my', auth, async (req, res) => {
+  try {
+    const apps   = await JobApplication.find({ user_id: req.user.userId }).sort({ applied_at: -1 });
+    const jobIds = [...new Set(apps.map(a => a.job_id))];
+    const jobs   = await Job.find({ _id: { $in: jobIds } }).select('title organization');
+    const jobMap = Object.fromEntries(jobs.map(j => [j._id.toString(), j]));
+    res.json({
+      applications: apps.map(a => ({
+        id:           a._id,
+        job_id:       a.job_id,
+        job_title:    jobMap[a.job_id]?.title        || 'Unknown Job',
+        organization: jobMap[a.job_id]?.organization || '',
+        applied_at:   a.applied_at,
+        status:       a.status
+      }))
+    });
+  } catch (e) { handleError(res, e); }
+});
+
 // ─── MESSAGE ROUTES ───────────────────────────────────────────────────────────
 
 app.get('/api/messages', auth, async (req, res) => {

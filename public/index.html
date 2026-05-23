@@ -39,6 +39,9 @@
   nav .nav-links { display: flex; gap: 4px; align-items: center; }
   nav .nav-links a { position: relative; color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.15s; }
   nav .nav-links a:hover, nav .nav-links a.active { color: var(--text); background: var(--surface2); }
+  .app-row { cursor: pointer; transition: background 0.12s; }
+  .app-row:hover { background: var(--surface2); }
+  .status-pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
   .nav-bell { position: relative; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 17px; padding: 6px 8px; border-radius: 8px; line-height: 1; transition: all 0.15s; margin-left: 2px; }
   .nav-bell:hover { background: var(--surface2); color: var(--text); }
   .nav-bell .nbadge { position: absolute; top: 2px; right: 1px; background: #f05a5a; color: #fff; font-size: 9px; font-weight: 700; min-width: 15px; height: 15px; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0 3px; font-family: var(--font-body); line-height: 1; pointer-events: none; }
@@ -314,6 +317,7 @@
           <button class="btn btn-ghost" onclick="navigate('researchers')" style="justify-content:flex-start">🔍 Find researchers</button>
           <button class="btn btn-ghost" onclick="navigate('projects')" style="justify-content:flex-start">🧪 Browse projects</button>
           <button class="btn btn-ghost" onclick="navigate('jobs')" style="justify-content:flex-start">💼 Browse jobs</button>
+          <button class="btn btn-ghost" onclick="navigate('my-applications')" style="justify-content:flex-start">📋 My applications</button>
           <button class="btn btn-ghost" onclick="openProjectModal()" style="justify-content:flex-start">➕ Post a project</button>
           <button class="btn btn-ghost" onclick="navigate('messages')" style="justify-content:flex-start">💬 Messages</button>
         </div>
@@ -356,7 +360,10 @@
   <div class="page" id="page-jobs">
     <div class="section-head">
       <h1>Research Jobs</h1>
-      <button class="btn btn-primary btn-sm" id="postJobBtn" onclick="openJobModal()" style="display:none">+ Post Job</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-ghost btn-sm" id="myAppsBtn" onclick="navigate('my-applications')" style="display:none">📋 My Applications</button>
+        <button class="btn btn-primary btn-sm" id="postJobBtn" onclick="openJobModal()" style="display:none">+ Post Job</button>
+      </div>
     </div>
     <div class="filter-bar">
       <select id="jType" onchange="loadJobs()">
@@ -375,6 +382,15 @@
   <!-- JOB DETAIL VIEW -->
   <div class="page" id="page-job-detail">
     <div id="jobDetailContent"></div>
+  </div>
+
+  <!-- MY APPLICATIONS PAGE -->
+  <div class="page" id="page-my-applications">
+    <div class="section-head">
+      <h1>My Applications</h1>
+      <button class="btn btn-ghost btn-sm" onclick="navigate('jobs')">← Browse Jobs</button>
+    </div>
+    <div id="myApplicationsContent"></div>
   </div>
 
   <!-- PROFILE PAGE -->
@@ -636,9 +652,10 @@ function navigate(page, extra) {
 
   if (page === 'home') renderHomeCTA();
   if (page === 'researchers') loadResearchers();
-  if (page === 'jobs') { loadJobs(); if (token) document.getElementById('postJobBtn').style.display = ''; }
+  if (page === 'jobs') { loadJobs(); if (token) { document.getElementById('postJobBtn').style.display = ''; document.getElementById('myAppsBtn').style.display = ''; } }
   if (page === 'projects') { loadProjects(); if (token) document.getElementById('postProjectBtn').style.display = ''; }
   if (page === 'my-projects') loadMyProjects();
+  if (page === 'my-applications') loadMyApplications();
   if (page === 'dashboard') loadDashboard();
   if (page === 'profile') loadProfile();
   if (page === 'messages') loadMessages();
@@ -1139,6 +1156,46 @@ async function submitApplication() {
   } catch(e) { alert(e.message); }
 }
 
+// ─── MY APPLICATIONS ──────────────────────────────────────────────────────────
+async function loadMyApplications() {
+  if (!token) { navigate('login'); return; }
+  const el = document.getElementById('myApplicationsContent');
+  el.innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('/jobs/applications/my');
+    if (!d.applications.length) {
+      el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><h3>No applications yet</h3><p>Find and apply to research jobs to track them here</p><button class="btn btn-primary" onclick="navigate('jobs')" style="margin-top:16px">Browse Jobs</button></div>`;
+      return;
+    }
+    const statusLabel = { pending: 'Submitted', under_review: 'Under Review', accepted: 'Accepted', rejected: 'Rejected' };
+    const statusColor = { pending: 'var(--muted)', under_review: 'var(--accent)', accepted: '#2dd4a0', rejected: '#f05a5a' };
+    el.innerHTML = `
+      <div style="margin-bottom:12px;color:var(--muted);font-size:14px">${d.applications.length} application${d.applications.length > 1 ? 's' : ''}</div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);text-align:left">
+              <th style="padding:12px 20px;font-size:13px;color:var(--muted);font-weight:600">Job Title</th>
+              <th style="padding:12px 20px;font-size:13px;color:var(--muted);font-weight:600">Organization</th>
+              <th style="padding:12px 20px;font-size:13px;color:var(--muted);font-weight:600">Date Applied</th>
+              <th style="padding:12px 20px;font-size:13px;color:var(--muted);font-weight:600">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${d.applications.map(a => `
+              <tr class="app-row" onclick="navigate('job-detail','${a.job_id}')" style="border-bottom:1px solid var(--border)">
+                <td style="padding:14px 20px;font-size:14px;font-weight:500">${a.job_title}</td>
+                <td style="padding:14px 20px;font-size:14px;color:var(--muted)">${a.organization || '—'}</td>
+                <td style="padding:14px 20px;font-size:14px;color:var(--muted)">${new Date(a.applied_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+                <td style="padding:14px 20px"><span style="font-size:12px;font-weight:700;color:${statusColor[a.status]||'var(--muted)'}">${statusLabel[a.status]||a.status}</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
 // ─── PROFILE ──────────────────────────────────────────────────────────────────
 async function loadProfile() {
   if (!token) { navigate('login'); return; }
@@ -1540,7 +1597,7 @@ function timeAgo(date) {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-const AUTH_ONLY = new Set(['dashboard', 'profile', 'messages', 'chat', 'my-projects']);
+const AUTH_ONLY = new Set(['dashboard', 'profile', 'messages', 'chat', 'my-projects', 'my-applications']);
 
 async function init() {
   if (token) {

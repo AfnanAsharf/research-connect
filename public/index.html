@@ -37,7 +37,7 @@
   .logo { font-family: var(--font-head); font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: var(--text); text-decoration: none; }
   .logo span { color: var(--accent); }
   nav .nav-links { display: flex; gap: 4px; align-items: center; }
-  nav .nav-links a { color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.15s; }
+  nav .nav-links a { position: relative; color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.15s; }
   nav .nav-links a:hover, nav .nav-links a.active { color: var(--text); background: var(--surface2); }
   .nav-bell { position: relative; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 17px; padding: 6px 8px; border-radius: 8px; line-height: 1; transition: all 0.15s; margin-left: 2px; }
   .nav-bell:hover { background: var(--surface2); color: var(--text); }
@@ -578,6 +578,7 @@ let myConnections = new Set();  // connected user IDs
 let pendingFrom   = new Map();  // userId → connectionId (incoming pending)
 let sentRequests  = new Set();  // user IDs I've sent outgoing requests to (session)
 let pendingCount  = 0;          // live count shown in notification bell
+let unreadMessages = 0;         // live unread message count shown on Messages link
 let _notifAt      = 0;          // timestamp of last background refresh
 
 const API = '';  // same origin
@@ -598,7 +599,7 @@ function navigate(page, extra) {
   const el = document.getElementById('page-' + page);
   if (el) { el.classList.add('active'); currentPage = page; }
   renderNav();
-  refreshNotifications();
+  refreshAllCounts();
   window.scrollTo(0, 0);
 
   if (page === 'home') renderHomeCTA();
@@ -626,7 +627,7 @@ function renderNav() {
       <a href="#" onclick="navigate('researchers')" class="${currentPage==='researchers'||currentPage==='researcher-profile'?'active':''}">Researchers</a>
       <a href="#" onclick="navigate('projects')" class="${currentPage==='projects'||currentPage==='my-projects'?'active':''}">Projects</a>
       <a href="#" onclick="navigate('jobs')" class="${currentPage==='jobs'||currentPage==='job-detail'?'active':''}">Jobs</a>
-      <a href="#" onclick="navigate('messages')" class="${currentPage==='messages'||currentPage==='chat'?'active':''}">Messages</a>
+      <a href="#" onclick="navigate('messages')" class="${currentPage==='messages'||currentPage==='chat'?'active':''}">Messages${unreadMessages > 0 ? `<span class="nbadge" style="top:-3px;right:2px">${unreadMessages > 9 ? '9+' : unreadMessages}</span>` : ''}</a>
       <a href="#" onclick="navigate('profile')" class="${currentPage==='profile'?'active':''}">Profile</a>
       ${bell}
       <button class="btn btn-danger btn-sm" onclick="doLogout()" style="margin-left:4px">Logout</button>
@@ -642,16 +643,24 @@ function renderNav() {
   }
 }
 
-// Fetch pending count in the background; throttled to once per 15s per navigation
-async function refreshNotifications() {
+// Fetch pending connections + unread messages in parallel; throttled to once per 15s
+async function refreshAllCounts() {
   if (!token) return;
   const now = Date.now();
   if (now - _notifAt < 15000) return;
   _notifAt = now;
   try {
-    const d = await api('/connections/pending');
-    const fresh = (d.pending || []).length;
-    if (fresh !== pendingCount) { pendingCount = fresh; renderNav(); }
+    const [notifs, msgs] = await Promise.all([
+      api('/connections/pending').catch(() => ({ pending: [] })),
+      api('/messages').catch(() => ({ conversations: [] }))
+    ]);
+    const freshPending = (notifs.pending || []).length;
+    const freshUnread  = (msgs.conversations || []).reduce((s, c) => s + (c.unreadCount || 0), 0);
+    if (freshPending !== pendingCount || freshUnread !== unreadMessages) {
+      pendingCount   = freshPending;
+      unreadMessages = freshUnread;
+      renderNav();
+    }
   } catch(e) {}
 }
 
@@ -1249,6 +1258,8 @@ async function loadMessages() {
   el.innerHTML = '<div class="spinner"></div>';
   try {
     const d = await api('/messages');
+    const freshUnread = (d.conversations || []).reduce((s, c) => s + (c.unreadCount || 0), 0);
+    if (freshUnread !== unreadMessages) { unreadMessages = freshUnread; _notifAt = Date.now(); renderNav(); }
     if (!d.conversations.length) {
       el.innerHTML = `<div class="empty"><div class="empty-icon">💬</div><h3>No conversations yet</h3><p>Find a researcher and send them a message</p><button class="btn btn-primary" onclick="navigate('researchers')" style="margin-top:16px">Find Researchers</button></div>`;
       return;

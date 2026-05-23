@@ -39,6 +39,9 @@
   nav .nav-links { display: flex; gap: 4px; align-items: center; }
   nav .nav-links a { color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.15s; }
   nav .nav-links a:hover, nav .nav-links a.active { color: var(--text); background: var(--surface2); }
+  .nav-bell { position: relative; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 17px; padding: 6px 8px; border-radius: 8px; line-height: 1; transition: all 0.15s; margin-left: 2px; }
+  .nav-bell:hover { background: var(--surface2); color: var(--text); }
+  .nav-bell .nbadge { position: absolute; top: 2px; right: 1px; background: #f05a5a; color: #fff; font-size: 9px; font-weight: 700; min-width: 15px; height: 15px; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0 3px; font-family: var(--font-body); line-height: 1; pointer-events: none; }
   
   main { flex: 1; max-width: 1100px; margin: 0 auto; width: 100%; padding: 40px 24px; }
   
@@ -574,6 +577,8 @@ let rDebounce, jDebounce;
 let myConnections = new Set();  // connected user IDs
 let pendingFrom   = new Map();  // userId → connectionId (incoming pending)
 let sentRequests  = new Set();  // user IDs I've sent outgoing requests to (session)
+let pendingCount  = 0;          // live count shown in notification bell
+let _notifAt      = 0;          // timestamp of last background refresh
 
 const API = '';  // same origin
 
@@ -593,6 +598,7 @@ function navigate(page, extra) {
   const el = document.getElementById('page-' + page);
   if (el) { el.classList.add('active'); currentPage = page; }
   renderNav();
+  refreshNotifications();
   window.scrollTo(0, 0);
 
   if (page === 'home') renderHomeCTA();
@@ -611,6 +617,10 @@ function navigate(page, extra) {
 function renderNav() {
   const nav = document.getElementById('navLinks');
   if (token) {
+    const bell = `
+      <button class="nav-bell" onclick="navigate('dashboard')" title="${pendingCount ? pendingCount + ' pending connection request' + (pendingCount > 1 ? 's' : '') : 'Notifications'}">
+        🔔${pendingCount > 0 ? `<span class="nbadge">${pendingCount > 9 ? '9+' : pendingCount}</span>` : ''}
+      </button>`;
     nav.innerHTML = `
       <a href="#" onclick="navigate('dashboard')" class="${currentPage==='dashboard'?'active':''}">Dashboard</a>
       <a href="#" onclick="navigate('researchers')" class="${currentPage==='researchers'||currentPage==='researcher-profile'?'active':''}">Researchers</a>
@@ -618,7 +628,8 @@ function renderNav() {
       <a href="#" onclick="navigate('jobs')" class="${currentPage==='jobs'||currentPage==='job-detail'?'active':''}">Jobs</a>
       <a href="#" onclick="navigate('messages')" class="${currentPage==='messages'||currentPage==='chat'?'active':''}">Messages</a>
       <a href="#" onclick="navigate('profile')" class="${currentPage==='profile'?'active':''}">Profile</a>
-      <button class="btn btn-danger btn-sm" onclick="doLogout()" style="margin-left:8px">Logout</button>
+      ${bell}
+      <button class="btn btn-danger btn-sm" onclick="doLogout()" style="margin-left:4px">Logout</button>
     `;
   } else {
     nav.innerHTML = `
@@ -629,6 +640,19 @@ function renderNav() {
       <button class="btn btn-primary btn-sm" onclick="navigate('signup')" style="margin-left:4px">Get Started</button>
     `;
   }
+}
+
+// Fetch pending count in the background; throttled to once per 15s per navigation
+async function refreshNotifications() {
+  if (!token) return;
+  const now = Date.now();
+  if (now - _notifAt < 15000) return;
+  _notifAt = now;
+  try {
+    const d = await api('/connections/pending');
+    const fresh = (d.pending || []).length;
+    if (fresh !== pendingCount) { pendingCount = fresh; renderNav(); }
+  } catch(e) {}
 }
 
 function renderHomeCTA() {
@@ -702,6 +726,9 @@ async function loadDashboard() {
 
     myConnections = new Set(conns.connections || []);
     pendingFrom   = new Map((pending.pending || []).map(p => [p.fromUserId, p.id]));
+    pendingCount  = pending.pending?.length || 0;
+    _notifAt      = Date.now();
+    renderNav();
 
     document.getElementById('dashStats').innerHTML = `
       <div class="stat-card"><div class="stat-val">${researchers.total}</div><div class="stat-label">Researchers</div></div>
@@ -775,6 +802,9 @@ async function loadResearchers() {
       ]);
       myConnections = new Set(conns.connections || []);
       pendingFrom   = new Map((pend.pending || []).map(p => [p.fromUserId, p.id]));
+      pendingCount  = pend.pending?.length || 0;
+      _notifAt      = Date.now();
+      renderNav();
     }
     const d = await api('/researchers?' + params);
     document.getElementById('researcherCount').textContent = d.total + ' researcher' + (d.total !== 1 ? 's' : '');
@@ -845,6 +875,9 @@ async function loadResearcherProfile(id) {
     if (token) {
       myConnections = new Set(conns.connections || []);
       pendingFrom   = new Map((pend.pending || []).map(p => [p.fromUserId, p.id]));
+      pendingCount  = pend.pending?.length || 0;
+      _notifAt      = Date.now();
+      renderNav();
     }
     const isOwnProfile = currentUser?.id?.toString() === id?.toString();
     el.innerHTML = `

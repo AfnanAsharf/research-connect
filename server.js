@@ -479,6 +479,51 @@ app.post('/api/jobs/:id/apply', auth, async (req, res) => {
   } catch (e) { handleError(res, e); }
 });
 
+app.get('/api/jobs/:id/applications', auth, async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id);
+    if (!job) return res.status(404).json({ error: 'Not found', messages: ['Job not found'] });
+    if (job.posted_by_user_id !== req.user.userId)
+      return res.status(403).json({ error: 'Forbidden', messages: ['Only the job poster can view applications'] });
+    const apps    = await JobApplication.find({ job_id: req.params.id }).sort({ applied_at: -1 });
+    const userIds = [...new Set(apps.map(a => a.user_id))];
+    const users   = await User.find({ _id: { $in: userIds } }).select('first_name last_name institution position');
+    const userMap = Object.fromEntries(users.map(u => [u._id.toString(), u]));
+    res.json({
+      applications: apps.map(a => {
+        const u = userMap[a.user_id] || {};
+        return {
+          id:          a._id,
+          user_id:     a.user_id,
+          name:        [u.first_name, u.last_name].filter(Boolean).join(' ') || 'Unknown Applicant',
+          institution: u.institution || '',
+          position:    u.position    || '',
+          message:     a.message,
+          applied_at:  a.applied_at,
+          status:      a.status
+        };
+      })
+    });
+  } catch (e) { handleError(res, e); }
+});
+
+app.patch('/api/jobs/applications/:appId/status', auth, async (req, res) => {
+  try {
+    const { status } = req.body || {};
+    const VALID_STATUSES = ['pending', 'under_review', 'accepted', 'rejected'];
+    if (!VALID_STATUSES.includes(status))
+      return badRequest(res, [`Status must be one of: ${VALID_STATUSES.join(', ')}`]);
+    const application = await JobApplication.findById(req.params.appId);
+    if (!application) return res.status(404).json({ error: 'Not found', messages: ['Application not found'] });
+    const job = await Job.findById(application.job_id);
+    if (!job || job.posted_by_user_id !== req.user.userId)
+      return res.status(403).json({ error: 'Forbidden', messages: ['Only the job poster can update this application'] });
+    application.status = status;
+    await application.save();
+    res.json({ message: 'Status updated', status });
+  } catch (e) { handleError(res, e); }
+});
+
 app.get('/api/jobs/applications/my', auth, async (req, res) => {
   try {
     const apps   = await JobApplication.find({ user_id: req.user.userId }).sort({ applied_at: -1 });

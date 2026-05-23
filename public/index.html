@@ -42,6 +42,8 @@
   .app-row { cursor: pointer; transition: background 0.12s; }
   .app-row:hover { background: var(--surface2); }
   .status-pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .status-select { font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:border-color 0.15s; }
+  .status-select:focus { outline:none; border-color:var(--accent); }
   .nav-bell { position: relative; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 17px; padding: 6px 8px; border-radius: 8px; line-height: 1; transition: all 0.15s; margin-left: 2px; }
   .nav-bell:hover { background: var(--surface2); color: var(--text); }
   .nav-bell .nbadge { position: absolute; top: 2px; right: 1px; background: #f05a5a; color: #fff; font-size: 9px; font-weight: 700; min-width: 15px; height: 15px; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0 3px; font-family: var(--font-body); line-height: 1; pointer-events: none; }
@@ -1085,6 +1087,7 @@ async function loadJobDetail(id) {
   el.innerHTML = '<div class="spinner"></div>';
   try {
     const j = await api('/jobs/' + id);
+    const isPoster = token && currentUser?.id === j.posted_by_user_id;
     el.innerHTML = `
       <button class="btn btn-ghost btn-sm" onclick="navigate('jobs')" style="margin-bottom:20px">← Back to Jobs</button>
       <div class="card">
@@ -1093,13 +1096,16 @@ async function loadJobDetail(id) {
             <h1 style="font-family:var(--font-head);font-size:26px;font-weight:800;margin-bottom:8px">${j.title}</h1>
             <div style="color:var(--muted)">${j.organization_name} · ${j.location||'Remote'}</div>
           </div>
-          ${token ? `<button class="btn btn-green" onclick="openApplyModal('${j.id}','${j.title.replace(/'/g,"\\'")}')">Apply Now</button>` : `<button class="btn btn-primary" onclick="navigate('login')">Sign in to Apply</button>`}
+          ${isPoster
+            ? `<span class="tag tag-blue" style="font-size:13px;padding:8px 14px">📋 Your Listing · ${j.applicantCount || 0} applicant${j.applicantCount !== 1 ? 's' : ''}</span>`
+            : (token ? `<button class="btn btn-green" onclick="openApplyModal('${j.id}','${j.title.replace(/'/g,"\\'")}')">Apply Now</button>` : `<button class="btn btn-primary" onclick="navigate('login')">Sign in to Apply</button>`)
+          }
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
           <span class="tag tag-yellow">${j.job_type}</span>
           ${j.salary_min ? `<span class="tag tag-green">$${j.salary_min.toLocaleString()}${j.salary_max?' – $'+j.salary_max.toLocaleString():''}</span>` : ''}
           ${j.is_remote ? '<span class="tag tag-purple">Remote</span>' : ''}
-          <span style="color:var(--muted);font-size:13px">${j.applicantCount || 0} applicants</span>
+          ${!isPoster ? `<span style="color:var(--muted);font-size:13px">${j.applicantCount || 0} applicants</span>` : ''}
         </div>
         <div style="white-space:pre-wrap;line-height:1.8;color:var(--muted);margin-bottom:20px">${j.description}</div>
         ${(j.required_fields||[]).length ? `
@@ -1108,11 +1114,70 @@ async function loadJobDetail(id) {
             <div style="display:flex;flex-wrap:wrap;gap:6px">${j.required_fields.map(f=>`<span class="tag tag-blue">${f}</span>`).join('')}</div>
           </div>
         ` : ''}
-        ${j.application_email ? `<p style="font-size:14px;color:var(--muted)">📧 Apply via: <a href="mailto:${j.application_email}" style="color:var(--accent)">${j.application_email}</a></p>` : ''}
+        ${j.application_email ? `<p style="font-size:14px;color:var(--muted)">📧 Applications sent to: <a href="mailto:${j.application_email}" style="color:var(--accent)">${j.application_email}</a></p>` : ''}
         <div style="margin-top:16px;font-size:13px;color:var(--muted)">Posted ${timeAgo(j.created_at)}</div>
       </div>
+      ${isPoster ? '<div id="jobApplicationsSection" style="margin-top:28px"></div>' : ''}
     `;
+    if (isPoster) loadJobApplications(id);
   } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+async function loadJobApplications(jobId) {
+  const el = document.getElementById('jobApplicationsSection');
+  if (!el) return;
+  el.innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('/jobs/' + jobId + '/applications');
+    const statusLabel = { pending: 'Submitted', under_review: 'Under Review', accepted: 'Accepted', rejected: 'Rejected' };
+    const statusColor = { pending: 'var(--muted)', under_review: 'var(--accent)', accepted: '#2dd4a0', rejected: '#f05a5a' };
+    if (!d.applications.length) {
+      el.innerHTML = `
+        <h2 style="font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:16px">Applications</h2>
+        <div class="card" style="text-align:center;padding:48px 24px;color:var(--muted)">
+          <div style="font-size:36px;margin-bottom:12px">📭</div>
+          <div style="font-weight:600;font-size:15px;margin-bottom:6px">No applications yet</div>
+          <div style="font-size:14px">Candidates who apply will appear here</div>
+        </div>`;
+      return;
+    }
+    el.innerHTML = `
+      <h2 style="font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:16px">
+        Applications <span style="font-size:14px;color:var(--muted);font-weight:400;margin-left:6px">${d.applications.length} received</span>
+      </h2>
+      ${d.applications.map(a => `
+        <div class="card" style="margin-bottom:14px">
+          <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+            <div class="avatar" style="background:${avatarColor(a.name)};flex-shrink:0">${a.name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase()}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:600;font-size:15px;margin-bottom:2px">${a.name}</div>
+              <div style="color:var(--muted);font-size:13px;margin-bottom:8px">${[a.position,a.institution].filter(Boolean).join(' · ') || 'No profile details'}</div>
+              ${a.message ? `<blockquote style="margin:0 0 10px;font-size:13px;color:var(--muted);background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 14px;line-height:1.6">${a.message}</blockquote>` : ''}
+              <div style="font-size:12px;color:var(--muted)">Applied ${timeAgo(a.applied_at)}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
+              <span style="font-size:12px;font-weight:700;color:${statusColor[a.status]||'var(--muted)'}">${statusLabel[a.status]||a.status}</span>
+              <select class="status-select" onchange="updateApplicationStatus('${a.id}','${jobId}',this.value)">
+                <option value="pending"      ${a.status==='pending'      ?'selected':''}>Submitted</option>
+                <option value="under_review" ${a.status==='under_review' ?'selected':''}>Under Review</option>
+                <option value="accepted"     ${a.status==='accepted'     ?'selected':''}>Accepted</option>
+                <option value="rejected"     ${a.status==='rejected'     ?'selected':''}>Rejected</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      `).join('')}`;
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+async function updateApplicationStatus(appId, jobId, status) {
+  try {
+    await api('/jobs/applications/' + appId + '/status', {
+      method: 'PATCH',
+      body: JSON.stringify({ status })
+    });
+    loadJobApplications(jobId);
+  } catch(e) { alert(e.message); }
 }
 
 function openJobModal() {

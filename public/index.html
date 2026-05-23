@@ -580,6 +580,7 @@ let sentRequests  = new Set();  // user IDs I've sent outgoing requests to (sess
 let pendingCount  = 0;          // live count shown in notification bell
 let unreadMessages = 0;         // live unread message count shown on Messages link
 let _notifAt      = 0;          // timestamp of last background refresh
+let _popstateNav  = false;      // true while popstate is handling back/forward
 
 const API = '';  // same origin
 
@@ -594,6 +595,33 @@ async function api(path, opts = {}) {
 }
 
 // ─── NAVIGATION ───────────────────────────────────────────────────────────────
+// ─── HISTORY / ROUTING ────────────────────────────────────────────────────────
+
+function pageToPath(page, extra) {
+  if (page === 'home')               return '/';
+  if (page === 'researcher-profile') return '/researchers/' + extra;
+  if (page === 'job-detail')         return '/jobs/' + extra;
+  if (page === 'chat')               return '/messages/' + (extra?.id || extra || '');
+  return '/' + page;
+}
+
+function pathToPage(path) {
+  const p = (path || '/').replace(/\/$/, '') || '/';
+  if (p === '/') return { page: 'home' };
+  const [, seg1, seg2] = p.split('/');
+  if (seg1 === 'researchers' && seg2) return { page: 'researcher-profile', extra: seg2 };
+  if (seg1 === 'jobs'        && seg2) return { page: 'job-detail',         extra: seg2 };
+  if (seg1 === 'messages'    && seg2) return { page: 'chat',               extra: { id: seg2, name: '' } };
+  return { page: seg1 || 'home' };
+}
+
+window.addEventListener('popstate', e => {
+  const state = e.state || pathToPage(location.pathname);
+  _popstateNav = true;
+  navigate(state.page || 'home', state.extra);
+  _popstateNav = false;
+});
+
 function navigate(page, extra) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const el = document.getElementById('page-' + page);
@@ -601,6 +629,10 @@ function navigate(page, extra) {
   renderNav();
   refreshAllCounts();
   window.scrollTo(0, 0);
+
+  if (!_popstateNav) {
+    history.pushState({ page, extra }, '', pageToPath(page, extra));
+  }
 
   if (page === 'home') renderHomeCTA();
   if (page === 'researchers') loadResearchers();
@@ -1508,6 +1540,8 @@ function timeAgo(date) {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
+const AUTH_ONLY = new Set(['dashboard', 'profile', 'messages', 'chat', 'my-projects']);
+
 async function init() {
   if (token) {
     try {
@@ -1516,7 +1550,20 @@ async function init() {
       localStorage.setItem('rc_user', JSON.stringify(currentUser));
     } catch { token = null; localStorage.removeItem('rc_token'); }
   }
-  navigate(token ? 'dashboard' : 'home');
+
+  // Determine starting page from the URL the user actually loaded
+  const { page: urlPage, extra: urlExtra } = pathToPage(location.pathname);
+  const needsAuth = AUTH_ONLY.has(urlPage) && !token;
+  const isRoot    = urlPage === 'home';
+  const startPage  = needsAuth || isRoot ? (token ? 'dashboard' : 'home') : urlPage;
+  const startExtra = needsAuth || isRoot ? undefined : urlExtra;
+
+  // Navigate without pushing — then replace the initial history entry with the
+  // correct URL so the very first back-button press doesn't leave the app
+  _popstateNav = true;
+  navigate(startPage, startExtra);
+  _popstateNav = false;
+  history.replaceState({ page: startPage, extra: startExtra }, '', pageToPath(startPage, startExtra));
 }
 
 init();

@@ -783,7 +783,18 @@
         font-family: var(--font-head);
         font-size: 32px;
         font-weight: 800;
-        color: var(--accent);
+        background: linear-gradient(135deg, #4f8ef7, #2dd4a0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .stat-card {
+        transition: all 0.3s ease;
+      }
+      .stat-card:hover {
+        border-color: #4f8ef7;
+        box-shadow: 0 0 20px rgba(79, 142, 247, 0.2);
+        transform: translateY(-2px);
       }
       .stat-card .stat-label {
         color: var(--muted);
@@ -889,12 +900,13 @@
         <div class="page" id="page-home">
           <div class="hero">
             <div class="hero-eyebrow">
-              🔬 Built for researchers, by researchers
+              Built by a researcher, for researchers
             </div>
-            <h1>Where scientists <em>connect</em> &amp; grow</h1>
+            <h1>Connecting the minds that <em>shape</em> tomorrow's science</h1>
             <p>
-              Find collaborators, discover research positions, and build your
-              academic network — all in one place.
+              Connect with fellow researchers, showcase your work, discover
+              collaboration opportunities, and advance your academic career —
+              all in one place.
             </p>
             <div class="hero-cta" id="heroCta"></div>
           </div>
@@ -903,8 +915,8 @@
               <div class="icon">🔍</div>
               <h3>Discover Researchers</h3>
               <p>
-                Search by field, institution, or expertise. Find peers working
-                on adjacent problems.
+                Search by field, institution, or expertise. Discover the right
+                minds for your next breakthrough.
               </p>
             </div>
             <div class="feature-card">

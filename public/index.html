@@ -1,1260 +1,2651 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>ResearchConnect</title>
+  <head>
+    <!-- SEO Meta Tags -->
+    <meta
+      name="description"
+      content="ResearchConnect — Where scientists connect and grow. Find collaborators, discover research positions, and build your academic network."
+    />
+    <meta
+      name="keywords"
+      content="research, researchers, collaboration, academic network, PhD, science, bioinformatics"
+    />
+    <meta name="author" content="Afnan Ashraf" />
 
-<!-- PWA -->
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#4f8ef7">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="ResearchConnect">
+    <!-- Open Graph (WhatsApp, LinkedIn, Facebook) -->
+    <meta
+      property="og:title"
+      content="ResearchConnect — Where Scientists Connect & Grow"
+    />
+    <meta
+      property="og:description"
+      content="Find collaborators, discover research positions, and build your academic network — all in one place."
+    />
+    <meta
+      property="og:url"
+      content="https://research-connect--afnanashrf37.replit.app"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:image"
+      content="https://research-connect--afnanashrf37.replit.app/icons/icon-512.png"
+    />
 
-<!-- iOS home screen -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ResearchConnect">
-<link rel="apple-touch-icon" href="/icons/icon-maskable-192.png">
+    <!-- Twitter/X Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ResearchConnect" />
+    <meta
+      name="twitter:description"
+      content="Where scientists connect and grow."
+    />
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>ResearchConnect</title>
 
-<!-- SEO / share -->
-<meta name="description" content="Find collaborators, discover research positions, and build your academic network.">
-<meta property="og:title" content="ResearchConnect">
-<meta property="og:description" content="Where scientists connect and grow.">
-<meta property="og:type" content="website">
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#4f8ef7" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="ResearchConnect" />
 
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0c0e14;
-    --surface: #13151f;
-    --surface2: #1a1d2e;
-    --border: #2a2d3e;
-    --accent: #4f8ef7;
-    --accent2: #7c5cbf;
-    --green: #2dd4a0;
-    --yellow: #f5c842;
-    --red: #f05a5a;
-    --text: #e8eaf2;
-    --muted: #7a7f9a;
-    --font-head: 'Syne', sans-serif;
-    --font-body: 'DM Sans', sans-serif;
-    --radius: 12px;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
-  
-  /* ── Layout ── */
-  #app { display: flex; flex-direction: column; min-height: 100vh; }
-  nav {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(12,14,20,0.92); backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 32px; height: 60px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .logo { font-family: var(--font-head); font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: var(--text); text-decoration: none; }
-  .logo span { color: var(--accent); }
-  nav .nav-links { display: flex; gap: 4px; align-items: center; }
-  nav .nav-links a { position: relative; color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.15s; }
-  nav .nav-links a:hover, nav .nav-links a.active { color: var(--text); background: var(--surface2); }
-  .app-row { cursor: pointer; transition: background 0.12s; }
-  .app-row:hover { background: var(--surface2); }
-  .status-pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
-  .status-select { font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:border-color 0.15s; }
-  .status-select:focus { outline:none; border-color:var(--accent); }
-  .nav-bell { position: relative; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 17px; padding: 6px 8px; border-radius: 8px; line-height: 1; transition: all 0.15s; margin-left: 2px; }
-  .nav-bell:hover { background: var(--surface2); color: var(--text); }
-  .nav-bell .nbadge { position: absolute; top: 2px; right: 1px; background: #f05a5a; color: #fff; font-size: 9px; font-weight: 700; min-width: 15px; height: 15px; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0 3px; font-family: var(--font-body); line-height: 1; pointer-events: none; }
-  
-  main { flex: 1; max-width: 1100px; margin: 0 auto; width: 100%; padding: 40px 24px; }
-  
-  /* ── Buttons ── */
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px; border: none; border-radius: 8px; font-family: var(--font-body); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; text-decoration: none; }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: #3a7af0; transform: translateY(-1px); }
-  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-  .btn-ghost:hover { background: var(--surface); border-color: var(--accent); color: var(--accent); }
-  .btn-danger { background: var(--red); color: #fff; }
-  .btn-danger:hover { background: #d94848; }
-  .btn-green { background: var(--green); color: #0c0e14; font-weight: 600; }
-  .btn-sm { padding: 6px 14px; font-size: 13px; }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-  
-  /* ── Cards ── */
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
-  .card:hover { border-color: rgba(79,142,247,0.3); }
-  
-  /* ── Forms ── */
-  .form-group { margin-bottom: 18px; }
-  .form-group label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-  input, textarea, select {
-    width: 100%; padding: 10px 14px; background: var(--surface2);
-    border: 1px solid var(--border); border-radius: 8px;
-    color: var(--text); font-family: var(--font-body); font-size: 14px;
-    transition: border-color 0.15s;
-  }
-  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
-  select option { background: var(--surface2); }
-  textarea { resize: vertical; min-height: 80px; }
-  
-  /* ── Tags ── */
-  .tag { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
-  .tag-blue { background: rgba(79,142,247,0.15); color: var(--accent); }
-  .tag-green { background: rgba(45,212,160,0.15); color: var(--green); }
-  .tag-yellow { background: rgba(245,200,66,0.15); color: var(--yellow); }
-  .tag-purple { background: rgba(124,92,191,0.15); color: #a784e8; }
-  
-  /* ── Alerts ── */
-  .alert { padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; }
-  .alert-error { background: rgba(240,90,90,0.1); border: 1px solid rgba(240,90,90,0.3); color: #f08080; }
-  .alert-success { background: rgba(45,212,160,0.1); border: 1px solid rgba(45,212,160,0.3); color: var(--green); }
-  
-  /* ── Avatar ── */
-  .avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 700; font-size: 16px; color: #fff; flex-shrink: 0; }
-  .avatar-lg { width: 64px; height: 64px; font-size: 22px; }
-  
-  /* ── Progress bar ── */
-  .progress-bar { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
-  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--green)); border-radius: 3px; transition: width 0.5s ease; }
-  
-  /* ── Spinner ── */
-  .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 40px auto; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  
-  /* ── Pages ── */
-  .page { display: none; animation: fadeIn 0.2s ease; }
-  .page.active { display: block; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-  
-  /* ── Hero ── */
-  .hero { text-align: center; padding: 60px 0 50px; }
-  .hero-eyebrow { display: inline-block; padding: 4px 14px; background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.3); border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
-  .hero h1 { font-family: var(--font-head); font-size: 52px; font-weight: 800; line-height: 1.1; letter-spacing: -2px; margin-bottom: 20px; }
-  .hero h1 em { font-style: normal; background: linear-gradient(135deg, var(--accent), var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .hero p { font-size: 17px; color: var(--muted); max-width: 520px; margin: 0 auto 32px; }
-  .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-  .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 60px; }
-  .feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
-  .feature-card .icon { font-size: 28px; margin-bottom: 12px; }
-  .feature-card h3 { font-family: var(--font-head); font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-  .feature-card p { font-size: 14px; color: var(--muted); }
-  
-  /* ── Auth forms ── */
-  .auth-wrap { max-width: 440px; margin: 40px auto; }
-  .auth-wrap h2 { font-family: var(--font-head); font-size: 28px; font-weight: 800; margin-bottom: 8px; }
-  .auth-wrap .sub { color: var(--muted); margin-bottom: 28px; font-size: 14px; }
-  
-  /* ── Section headers ── */
-  .section-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; }
-  .section-head h1 { font-family: var(--font-head); font-size: 30px; font-weight: 800; letter-spacing: -1px; }
-  .section-head .count { color: var(--muted); font-size: 14px; }
-  
-  /* ── Filter bar ── */
-  .filter-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-  .filter-bar input, .filter-bar select { flex: 1; min-width: 160px; }
-  
-  /* ── Researcher card ── */
-  .researcher-card { display: flex; gap: 16px; align-items: flex-start; }
-  .researcher-card .info h3 { font-family: var(--font-head); font-size: 17px; font-weight: 700; margin-bottom: 4px; cursor: pointer; }
-  .researcher-card .info h3:hover { color: var(--accent); }
-  .researcher-card .meta { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
-  .researcher-card .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-  .researcher-card .stats { display: flex; gap: 20px; font-size: 13px; color: var(--muted); }
-  .researcher-card .stats strong { color: var(--text); }
-  
-  /* ── Job card ── */
-  .job-card h3 { font-family: var(--font-head); font-size: 17px; font-weight: 700; margin-bottom: 6px; cursor: pointer; }
-  .job-card h3:hover { color: var(--accent); }
-  .job-card .org { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
-  .job-card .desc { font-size: 14px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
-  .job-card .job-footer { display: flex; justify-content: space-between; align-items: center; }
-  
-  /* ── Profile page ── */
-  .profile-header { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 32px; }
-  .profile-header .info h1 { font-family: var(--font-head); font-size: 26px; font-weight: 800; margin-bottom: 4px; }
-  .profile-header .info .role { color: var(--muted); margin-bottom: 12px; }
-  .profile-section { margin-bottom: 28px; }
-  .profile-section h3 { font-family: var(--font-head); font-size: 16px; font-weight: 700; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-  
-  /* ── Messages ── */
-  .convo-list { display: flex; flex-direction: column; gap: 8px; }
-  .convo-item { display: flex; gap: 14px; align-items: center; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all 0.15s; }
-  .convo-item:hover { border-color: rgba(79,142,247,0.4); background: var(--surface2); }
-  .convo-item .convo-info { flex: 1; min-width: 0; }
-  .convo-item .convo-name { font-weight: 500; margin-bottom: 2px; }
-  .convo-item .convo-preview { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .unread-badge { background: var(--accent); color: #fff; border-radius: 10px; padding: 1px 7px; font-size: 11px; font-weight: 600; }
-  .chat-wrap { display: flex; flex-direction: column; height: 500px; }
-  .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-  .chat-messages::-webkit-scrollbar { width: 4px; }
-  .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-  .msg-bubble { max-width: 70%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.5; }
-  .msg-bubble.mine { background: var(--accent); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
-  .msg-bubble.theirs { background: var(--surface2); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
-  .msg-time { font-size: 11px; opacity: 0.6; margin-top: 3px; }
-  .chat-input-row { display: flex; gap: 10px; padding: 12px 16px; border-top: 1px solid var(--border); }
-  .chat-input-row input { flex: 1; }
-  
-  /* ── Dashboard ── */
-  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
-  .stat-card .stat-val { font-family: var(--font-head); font-size: 32px; font-weight: 800; color: var(--accent); }
-  .stat-card .stat-label { color: var(--muted); font-size: 13px; margin-top: 4px; }
-  
-  /* ── Modal ── */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 500; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-  .modal-overlay.open { display: flex; }
-  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; animation: fadeIn 0.2s ease; }
-  .modal h2 { font-family: var(--font-head); font-size: 22px; font-weight: 800; margin-bottom: 20px; }
-  .modal-close { float: right; background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; margin-top: -4px; }
-  
-  /* ── Empty state ── */
-  .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
-  .empty .empty-icon { font-size: 48px; margin-bottom: 16px; }
-  .empty h3 { font-family: var(--font-head); font-size: 20px; color: var(--text); margin-bottom: 8px; }
-  
-  @media (max-width: 768px) {
-    .hero h1 { font-size: 36px; }
-    .feature-grid { grid-template-columns: 1fr; }
-    .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .filter-bar { flex-direction: column; }
-    nav { padding: 0 16px; }
-    main { padding: 24px 16px; }
-  }
-</style>
-</head>
-<body>
-<div id="app">
+    <!-- iOS home screen -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="ResearchConnect" />
+    <link rel="apple-touch-icon" href="/icons/icon-maskable-192.png" />
 
-<!-- ── NAV ── -->
-<nav id="navbar">
-  <a class="logo" href="#" onclick="navigate('home')">Research<span>Connect</span></a>
-  <div class="nav-links" id="navLinks">
-    <!-- filled by JS -->
-  </div>
-</nav>
+    <!-- SEO / share -->
+    <meta
+      name="description"
+      content="Find collaborators, discover research positions, and build your academic network."
+    />
+    <meta property="og:title" content="ResearchConnect" />
+    <meta
+      property="og:description"
+      content="Where scientists connect and grow."
+    />
+    <meta property="og:type" content="website" />
 
-<!-- ── MAIN ── -->
-<main id="mainContent">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0c0e14;
+        --surface: #13151f;
+        --surface2: #1a1d2e;
+        --border: #2a2d3e;
+        --accent: #4f8ef7;
+        --accent2: #7c5cbf;
+        --green: #2dd4a0;
+        --yellow: #f5c842;
+        --red: #f05a5a;
+        --text: #e8eaf2;
+        --muted: #7a7f9a;
+        --font-head: "Syne", sans-serif;
+        --font-body: "DM Sans", sans-serif;
+        --radius: 12px;
+        --gradient: linear-gradient(135deg, #4f8ef7, #2dd4a0);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-body);
+        font-size: 15px;
+        line-height: 1.6;
+      }
 
-  <!-- HOME PAGE -->
-  <div class="page" id="page-home">
-    <div class="hero">
-      <div class="hero-eyebrow">🔬 Built for researchers, by researchers</div>
-      <h1>Where scientists <em>connect</em> &amp; grow</h1>
-      <p>Find collaborators, discover research positions, and build your academic network — all in one place.</p>
-      <div class="hero-cta" id="heroCta"></div>
-    </div>
-    <div class="feature-grid">
-      <div class="feature-card">
-        <div class="icon">🔍</div>
-        <h3>Discover Researchers</h3>
-        <p>Search by field, institution, or expertise. Find peers working on adjacent problems.</p>
-      </div>
-      <div class="feature-card">
-        <div class="icon">💼</div>
-        <h3>Research Jobs</h3>
-        <p>Postdocs, faculty roles, industry R&amp;D. Post listings or find your next opportunity.</p>
-      </div>
-      <div class="feature-card">
-        <div class="icon">🤝</div>
-        <h3>Network &amp; Message</h3>
-        <p>Connect directly with researchers. Build collaborations and stay in touch.</p>
-      </div>
-    </div>
-  </div>
+      /* ── Layout ── */
+      #app {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(12, 14, 20, 0.92);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        padding: 0 32px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .logo {
+        font-family: var(--font-head);
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        color: var(--text);
+        text-decoration: none;
+      }
+      .logo span {
+        background: linear-gradient(135deg, #4f8ef7, #2dd4a0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      nav .nav-links {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+      }
+      nav .nav-links a {
+        position: relative;
+        color: var(--muted);
+        text-decoration: none;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.15s;
+      }
+      nav .nav-links a:hover,
+      nav .nav-links a.active {
+        color: var(--text);
+        background: var(--surface2);
+      }
+      .app-row {
+        cursor: pointer;
+        transition: background 0.12s;
+      }
+      .app-row:hover {
+        background: var(--surface2);
+      }
+      .status-pill {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 20px;
+      }
+      .status-select {
+        font-size: 13px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--surface2);
+        color: var(--text);
+        cursor: pointer;
+        transition: border-color 0.15s;
+      }
+      .status-select:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      .nav-bell {
+        position: relative;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 17px;
+        padding: 6px 8px;
+        border-radius: 8px;
+        line-height: 1;
+        transition: all 0.15s;
+        margin-left: 2px;
+      }
+      .nav-bell:hover {
+        background: var(--surface2);
+        color: var(--text);
+      }
+      .nav-bell .nbadge {
+        position: absolute;
+        top: 2px;
+        right: 1px;
+        background: #f05a5a;
+        color: #fff;
+        font-size: 9px;
+        font-weight: 700;
+        min-width: 15px;
+        height: 15px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 3px;
+        font-family: var(--font-body);
+        line-height: 1;
+        pointer-events: none;
+      }
 
-  <!-- SIGNUP PAGE -->
-  <div class="page" id="page-signup">
-    <div class="auth-wrap">
-      <h2>Create Account</h2>
-      <p class="sub">Join thousands of researchers worldwide</p>
-      <div id="signupError" class="alert alert-error" style="display:none"></div>
-      <div class="card">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-          <div class="form-group">
-            <label>First Name</label>
-            <input id="regFirst" type="text" placeholder="Ada">
+      main {
+        flex: 1;
+        max-width: 1100px;
+        margin: 0 auto;
+        width: 100%;
+        padding: 40px 24px;
+      }
+
+      /* ── Buttons ── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 20px;
+        border: none;
+        border-radius: 8px;
+        font-family: var(--font-body);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+        text-decoration: none;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: #3a7af0;
+        transform: translateY(-1px);
+      }
+      .btn-ghost {
+        background: var(--surface2);
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+      .btn-ghost:hover {
+        background: var(--surface);
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .btn-danger {
+        background: var(--red);
+        color: #fff;
+      }
+      .btn-danger:hover {
+        background: #d94848;
+      }
+      .btn-green {
+        background: var(--green);
+        color: #0c0e14;
+        font-weight: 600;
+      }
+      .btn-sm {
+        padding: 6px 14px;
+        font-size: 13px;
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* ── Cards ── */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+      }
+      .card:hover {
+        border-color: rgba(79, 142, 247, 0.3);
+      }
+
+      /* ── Forms ── */
+      .form-group {
+        margin-bottom: 18px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px 14px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: var(--font-body);
+        font-size: 14px;
+        transition: border-color 0.15s;
+      }
+      input:focus,
+      textarea:focus,
+      select:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      select option {
+        background: var(--surface2);
+      }
+      textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+
+      /* ── Tags ── */
+      .tag {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .tag-blue {
+        background: rgba(79, 142, 247, 0.15);
+        color: var(--accent);
+      }
+      .tag-green {
+        background: rgba(45, 212, 160, 0.15);
+        color: var(--green);
+      }
+      .tag-yellow {
+        background: rgba(245, 200, 66, 0.15);
+        color: var(--yellow);
+      }
+      .tag-purple {
+        background: rgba(124, 92, 191, 0.15);
+        color: #a784e8;
+      }
+
+      /* ── Alerts ── */
+      .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        margin-bottom: 16px;
+      }
+      .alert-error {
+        background: rgba(240, 90, 90, 0.1);
+        border: 1px solid rgba(240, 90, 90, 0.3);
+        color: #f08080;
+      }
+      .alert-success {
+        background: rgba(45, 212, 160, 0.1);
+        border: 1px solid rgba(45, 212, 160, 0.3);
+        color: var(--green);
+      }
+
+      /* ── Avatar ── */
+      .avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-head);
+        font-weight: 700;
+        font-size: 16px;
+        color: #fff;
+        flex-shrink: 0;
+      }
+      .avatar-lg {
+        width: 64px;
+        height: 64px;
+        font-size: 22px;
+      }
+
+      /* ── Progress bar ── */
+      .progress-bar {
+        height: 6px;
+        background: var(--surface2);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent), var(--green));
+        border-radius: 3px;
+        transition: width 0.5s ease;
+      }
+
+      /* ── Spinner ── */
+      .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 40px auto;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ── Pages ── */
+      .page {
+        display: none;
+        animation: fadeIn 0.2s ease;
+      }
+      .page.active {
+        display: block;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* ── Hero ── */
+      .hero {
+        text-align: center;
+        padding: 60px 0 50px;
+      }
+      .hero-eyebrow {
+        display: inline-block;
+        padding: 4px 14px;
+        background: rgba(79, 142, 247, 0.1);
+        border: 1px solid rgba(79, 142, 247, 0.3);
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--accent);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+      }
+      .hero h1 {
+        font-family: var(--font-head);
+        font-size: 52px;
+        font-weight: 800;
+        line-height: 1.1;
+        letter-spacing: -2px;
+        margin-bottom: 20px;
+      }
+      .hero h1 em {
+        font-style: normal;
+        background: linear-gradient(135deg, var(--accent), var(--green));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .hero p {
+        font-size: 17px;
+        color: var(--muted);
+        max-width: 520px;
+        margin: 0 auto 32px;
+      }
+      .hero-cta {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-top: 60px;
+      }
+      .feature-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+      }
+      .feature-card .icon {
+        font-size: 28px;
+        margin-bottom: 12px;
+      }
+      .feature-card h3 {
+        font-family: var(--font-head);
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .feature-card p {
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      /* ── Auth forms ── */
+      .auth-wrap {
+        max-width: 440px;
+        margin: 40px auto;
+      }
+      .auth-wrap h2 {
+        font-family: var(--font-head);
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+      .auth-wrap .sub {
+        color: var(--muted);
+        margin-bottom: 28px;
+        font-size: 14px;
+      }
+
+      /* ── Section headers ── */
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 24px;
+      }
+      .section-head h1 {
+        font-family: var(--font-head);
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: -1px;
+      }
+      .section-head .count {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      /* ── Filter bar ── */
+      .filter-bar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+      }
+      .filter-bar input,
+      .filter-bar select {
+        flex: 1;
+        min-width: 160px;
+      }
+
+      /* ── Researcher card ── */
+      .researcher-card {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+      }
+      .researcher-card .info h3 {
+        font-family: var(--font-head);
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        cursor: pointer;
+      }
+      .researcher-card .info h3:hover {
+        color: var(--accent);
+      }
+      .researcher-card .meta {
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+      .researcher-card .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+      .researcher-card .stats {
+        display: flex;
+        gap: 20px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .researcher-card .stats strong {
+        color: var(--text);
+      }
+
+      /* ── Job card ── */
+      .job-card h3 {
+        font-family: var(--font-head);
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        cursor: pointer;
+      }
+      .job-card h3:hover {
+        color: var(--accent);
+      }
+      .job-card .org {
+        color: var(--muted);
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+      .job-card .desc {
+        font-size: 14px;
+        color: var(--muted);
+        margin-bottom: 12px;
+        line-height: 1.5;
+      }
+      .job-card .job-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      /* ── Profile page ── */
+      .profile-header {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        margin-bottom: 32px;
+      }
+      .profile-header .info h1 {
+        font-family: var(--font-head);
+        font-size: 26px;
+        font-weight: 800;
+        margin-bottom: 4px;
+      }
+      .profile-header .info .role {
+        color: var(--muted);
+        margin-bottom: 12px;
+      }
+      .profile-section {
+        margin-bottom: 28px;
+      }
+      .profile-section h3 {
+        font-family: var(--font-head);
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 14px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      /* ── Messages ── */
+      .convo-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .convo-item {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        padding: 14px 16px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .convo-item:hover {
+        border-color: rgba(79, 142, 247, 0.4);
+        background: var(--surface2);
+      }
+      .convo-item .convo-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .convo-item .convo-name {
+        font-weight: 500;
+        margin-bottom: 2px;
+      }
+      .convo-item .convo-preview {
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .unread-badge {
+        background: var(--accent);
+        color: #fff;
+        border-radius: 10px;
+        padding: 1px 7px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .chat-wrap {
+        display: flex;
+        flex-direction: column;
+        height: 500px;
+      }
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .chat-messages::-webkit-scrollbar {
+        width: 4px;
+      }
+      .chat-messages::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 2px;
+      }
+      .msg-bubble {
+        max-width: 70%;
+        padding: 10px 14px;
+        border-radius: 14px;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .msg-bubble.mine {
+        background: var(--accent);
+        color: #fff;
+        align-self: flex-end;
+        border-bottom-right-radius: 4px;
+      }
+      .msg-bubble.theirs {
+        background: var(--surface2);
+        color: var(--text);
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+      }
+      .msg-time {
+        font-size: 11px;
+        opacity: 0.6;
+        margin-top: 3px;
+      }
+      .chat-input-row {
+        display: flex;
+        gap: 10px;
+        padding: 12px 16px;
+        border-top: 1px solid var(--border);
+      }
+      .chat-input-row input {
+        flex: 1;
+      }
+
+      /* ── Dashboard ── */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 32px;
+      }
+      .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+      }
+      .stat-card .stat-val {
+        font-family: var(--font-head);
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--accent);
+      }
+      .stat-card .stat-label {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+
+      /* ── Modal ── */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 500;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+      }
+      .modal-overlay.open {
+        display: flex;
+      }
+      .modal {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 32px;
+        width: 100%;
+        max-width: 520px;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: fadeIn 0.2s ease;
+      }
+      .modal h2 {
+        font-family: var(--font-head);
+        font-size: 22px;
+        font-weight: 800;
+        margin-bottom: 20px;
+      }
+      .modal-close {
+        float: right;
+        background: none;
+        border: none;
+        color: var(--muted);
+        font-size: 20px;
+        cursor: pointer;
+        margin-top: -4px;
+      }
+
+      /* ── Empty state ── */
+      .empty {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--muted);
+      }
+      .empty .empty-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+      }
+      .empty h3 {
+        font-family: var(--font-head);
+        font-size: 20px;
+        color: var(--text);
+        margin-bottom: 8px;
+      }
+
+      @media (max-width: 768px) {
+        .hero h1 {
+          font-size: 36px;
+        }
+        .feature-grid {
+          grid-template-columns: 1fr;
+        }
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .filter-bar {
+          flex-direction: column;
+        }
+        nav {
+          padding: 0 16px;
+        }
+        main {
+          padding: 24px 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <!-- ── NAV ── -->
+      <nav id="navbar">
+        <a class="logo" href="#" onclick="navigate('home')"
+          >Research<span>Connect</span></a
+        >
+        <div class="nav-links" id="navLinks">
+          <!-- filled by JS -->
+        </div>
+      </nav>
+
+      <!-- ── MAIN ── -->
+      <main id="mainContent">
+        <!-- HOME PAGE -->
+        <div class="page" id="page-home">
+          <div class="hero">
+            <div class="hero-eyebrow">
+              🔬 Built for researchers, by researchers
+            </div>
+            <h1>Where scientists <em>connect</em> &amp; grow</h1>
+            <p>
+              Find collaborators, discover research positions, and build your
+              academic network — all in one place.
+            </p>
+            <div class="hero-cta" id="heroCta"></div>
           </div>
-          <div class="form-group">
-            <label>Last Name</label>
-            <input id="regLast" type="text" placeholder="Lovelace">
+          <div class="feature-grid">
+            <div class="feature-card">
+              <div class="icon">🔍</div>
+              <h3>Discover Researchers</h3>
+              <p>
+                Search by field, institution, or expertise. Find peers working
+                on adjacent problems.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="icon">💼</div>
+              <h3>Research Jobs</h3>
+              <p>
+                Postdocs, faculty roles, industry R&amp;D. Post listings or find
+                your next opportunity.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="icon">🤝</div>
+              <h3>Network &amp; Message</h3>
+              <p>
+                Connect directly with researchers. Build collaborations and stay
+                in touch.
+              </p>
+            </div>
           </div>
         </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input id="regEmail" type="email" placeholder="ada@university.edu">
-        </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input id="regPass" type="password" placeholder="At least 6 characters">
-        </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px" id="signupBtn" onclick="doRegister()">Create Account</button>
-        <p style="text-align:center;margin-top:16px;font-size:14px;color:var(--muted)">Already have an account? <a href="#" onclick="navigate('login')" style="color:var(--accent)">Sign in</a></p>
-      </div>
-    </div>
-  </div>
 
-  <!-- LOGIN PAGE -->
-  <div class="page" id="page-login">
-    <div class="auth-wrap">
-      <h2>Welcome back</h2>
-      <p class="sub">Sign in to your ResearchConnect account</p>
-      <div id="loginError" class="alert alert-error" style="display:none"></div>
-      <div class="card">
-        <div class="form-group">
-          <label>Email</label>
-          <input id="loginEmail" type="email" placeholder="ada@university.edu">
-        </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input id="loginPass" type="password" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()">
-        </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px" onclick="doLogin()">Sign In</button>
-        <p style="text-align:center;margin-top:16px;font-size:14px;color:var(--muted)">No account? <a href="#" onclick="navigate('signup')" style="color:var(--accent)">Create one free</a></p>
-      </div>
-    </div>
-  </div>
-
-  <!-- DASHBOARD -->
-  <div class="page" id="page-dashboard">
-    <div class="section-head"><h1 id="dashGreeting">Dashboard</h1></div>
-    <div class="stats-grid" id="dashStats"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
-      <div>
-        <h3 style="font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:14px">Profile Completeness</h3>
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <span id="dashCompPct" style="font-family:var(--font-head);font-size:28px;font-weight:800;color:var(--accent)">0%</span>
-            <button class="btn btn-ghost btn-sm" onclick="navigate('profile')">Edit profile →</button>
+        <!-- SIGNUP PAGE -->
+        <div class="page" id="page-signup">
+          <div class="auth-wrap">
+            <h2>Create Account</h2>
+            <p class="sub">Join thousands of researchers worldwide</p>
+            <div
+              id="signupError"
+              class="alert alert-error"
+              style="display: none"
+            ></div>
+            <div class="card">
+              <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px"
+              >
+                <div class="form-group">
+                  <label>First Name</label>
+                  <input id="regFirst" type="text" placeholder="Ada" />
+                </div>
+                <div class="form-group">
+                  <label>Last Name</label>
+                  <input id="regLast" type="text" placeholder="Lovelace" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input
+                  id="regEmail"
+                  type="email"
+                  placeholder="ada@university.edu"
+                />
+              </div>
+              <div class="form-group">
+                <label>Password</label>
+                <input
+                  id="regPass"
+                  type="password"
+                  placeholder="At least 6 characters"
+                />
+              </div>
+              <button
+                class="btn btn-primary"
+                style="width: 100%; justify-content: center; padding: 12px"
+                id="signupBtn"
+                onclick="doRegister()"
+              >
+                Create Account
+              </button>
+              <p
+                style="
+                  text-align: center;
+                  margin-top: 16px;
+                  font-size: 14px;
+                  color: var(--muted);
+                "
+              >
+                Already have an account?
+                <a
+                  href="#"
+                  onclick="navigate('login')"
+                  style="color: var(--accent)"
+                  >Sign in</a
+                >
+              </p>
+            </div>
           </div>
-          <div class="progress-bar"><div class="progress-bar-fill" id="dashCompBar" style="width:0%"></div></div>
         </div>
-      </div>
-      <div>
-        <h3 style="font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:14px">Quick Actions</h3>
-        <div class="card" style="display:flex;flex-direction:column;gap:10px">
-          <button class="btn btn-ghost" onclick="navigate('researchers')" style="justify-content:flex-start">🔍 Find researchers</button>
-          <button class="btn btn-ghost" onclick="navigate('projects')" style="justify-content:flex-start">🧪 Browse projects</button>
-          <button class="btn btn-ghost" onclick="navigate('jobs')" style="justify-content:flex-start">💼 Browse jobs</button>
-          <button class="btn btn-ghost" onclick="navigate('my-applications')" style="justify-content:flex-start">📋 My applications</button>
-          <button class="btn btn-ghost" onclick="openProjectModal()" style="justify-content:flex-start">➕ Post a project</button>
-          <button class="btn btn-ghost" onclick="navigate('messages')" style="justify-content:flex-start">💬 Messages</button>
+
+        <!-- LOGIN PAGE -->
+        <div class="page" id="page-login">
+          <div class="auth-wrap">
+            <h2>Welcome back</h2>
+            <p class="sub">Sign in to your ResearchConnect account</p>
+            <div
+              id="loginError"
+              class="alert alert-error"
+              style="display: none"
+            ></div>
+            <div class="card">
+              <div class="form-group">
+                <label>Email</label>
+                <input
+                  id="loginEmail"
+                  type="email"
+                  placeholder="ada@university.edu"
+                />
+              </div>
+              <div class="form-group">
+                <label>Password</label>
+                <input
+                  id="loginPass"
+                  type="password"
+                  placeholder="Your password"
+                  onkeydown="if(event.key==='Enter')doLogin()"
+                />
+              </div>
+              <button
+                class="btn btn-primary"
+                style="width: 100%; justify-content: center; padding: 12px"
+                onclick="doLogin()"
+              >
+                Sign In
+              </button>
+              <p
+                style="
+                  text-align: center;
+                  margin-top: 16px;
+                  font-size: 14px;
+                  color: var(--muted);
+                "
+              >
+                No account?
+                <a
+                  href="#"
+                  onclick="navigate('signup')"
+                  style="color: var(--accent)"
+                  >Create one free</a
+                >
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-    <div id="dashPending" style="margin-top:24px"></div>
-  </div>
 
-  <!-- RESEARCHERS PAGE -->
-  <div class="page" id="page-researchers">
-    <div class="section-head">
-      <h1>Find Researchers</h1>
-      <span class="count" id="researcherCount"></span>
-    </div>
-    <div class="filter-bar">
-      <input id="rSearch" type="text" placeholder="🔍 Search by name or bio..." oninput="debounceLoadResearchers()">
-      <input id="rField" type="text" placeholder="Research field (e.g. CRISPR)" oninput="debounceLoadResearchers()">
-      <input id="rInstitution" type="text" placeholder="Institution" oninput="debounceLoadResearchers()">
-      <select id="rPosition" onchange="loadResearchers()">
-        <option value="">All positions</option>
-        <option value="PhD Student">PhD Student</option>
-        <option value="Postdoc">Postdoc</option>
-        <option value="Research Scientist">Research Scientist</option>
-        <option value="Assistant Professor">Assistant Professor</option>
-        <option value="Associate Professor">Associate Professor</option>
-        <option value="Professor">Professor</option>
-        <option value="Industry">Industry</option>
-      </select>
-    </div>
-    <div id="activeFilters" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"></div>
-    <div id="researcherList"></div>
-  </div>
-
-  <!-- RESEARCHER PROFILE VIEW -->
-  <div class="page" id="page-researcher-profile">
-    <div id="researcherProfileContent"></div>
-  </div>
-
-  <!-- JOBS PAGE -->
-  <div class="page" id="page-jobs">
-    <div class="section-head">
-      <h1>Research Jobs</h1>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button class="btn btn-ghost btn-sm" id="myAppsBtn" onclick="navigate('my-applications')" style="display:none">📋 My Applications</button>
-        <button class="btn btn-primary btn-sm" id="postJobBtn" onclick="openJobModal()" style="display:none">+ Post Job</button>
-      </div>
-    </div>
-    <div class="filter-bar">
-      <select id="jType" onchange="loadJobs()">
-        <option value="">All types</option>
-        <option value="postdoc">Postdoc</option>
-        <option value="faculty">Faculty</option>
-        <option value="phd">PhD</option>
-        <option value="industry">Industry</option>
-        <option value="research-scientist">Research Scientist</option>
-      </select>
-      <input id="jField" type="text" placeholder="Research field" oninput="debounceLoadJobs()">
-    </div>
-    <div id="jobList"></div>
-  </div>
-
-  <!-- JOB DETAIL VIEW -->
-  <div class="page" id="page-job-detail">
-    <div id="jobDetailContent"></div>
-  </div>
-
-  <!-- MY APPLICATIONS PAGE -->
-  <div class="page" id="page-my-applications">
-    <div class="section-head">
-      <h1>My Applications</h1>
-      <button class="btn btn-ghost btn-sm" onclick="navigate('jobs')">← Browse Jobs</button>
-    </div>
-    <div id="myApplicationsContent"></div>
-  </div>
-
-  <!-- PROFILE PAGE -->
-  <div class="page" id="page-profile">
-    <div class="section-head"><h1>My Profile</h1></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px" id="profileEditGrid">
-      <div>
-        <div class="card" style="margin-bottom:20px">
-          <div style="display:flex;gap:16px;align-items:center;margin-bottom:20px">
-            <div class="avatar avatar-lg" id="profileAvatar">?</div>
+        <!-- DASHBOARD -->
+        <div class="page" id="page-dashboard">
+          <div class="section-head"><h1 id="dashGreeting">Dashboard</h1></div>
+          <div class="stats-grid" id="dashStats"></div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px">
             <div>
-              <div style="font-family:var(--font-head);font-size:18px;font-weight:700" id="profileName">—</div>
-              <div style="color:var(--muted);font-size:13px" id="profileRole">—</div>
+              <h3
+                style="
+                  font-family: var(--font-head);
+                  font-size: 16px;
+                  font-weight: 700;
+                  margin-bottom: 14px;
+                "
+              >
+                Profile Completeness
+              </h3>
+              <div class="card">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 12px;
+                  "
+                >
+                  <span
+                    id="dashCompPct"
+                    style="
+                      font-family: var(--font-head);
+                      font-size: 28px;
+                      font-weight: 800;
+                      color: var(--accent);
+                    "
+                    >0%</span
+                  >
+                  <button
+                    class="btn btn-ghost btn-sm"
+                    onclick="navigate('profile')"
+                  >
+                    Edit profile →
+                  </button>
+                </div>
+                <div class="progress-bar">
+                  <div
+                    class="progress-bar-fill"
+                    id="dashCompBar"
+                    style="width: 0%"
+                  ></div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h3
+                style="
+                  font-family: var(--font-head);
+                  font-size: 16px;
+                  font-weight: 700;
+                  margin-bottom: 14px;
+                "
+              >
+                Quick Actions
+              </h3>
+              <div
+                class="card"
+                style="display: flex; flex-direction: column; gap: 10px"
+              >
+                <button
+                  class="btn btn-ghost"
+                  onclick="navigate('researchers')"
+                  style="justify-content: flex-start"
+                >
+                  🔍 Find researchers
+                </button>
+                <button
+                  class="btn btn-ghost"
+                  onclick="navigate('projects')"
+                  style="justify-content: flex-start"
+                >
+                  🧪 Browse projects
+                </button>
+                <button
+                  class="btn btn-ghost"
+                  onclick="navigate('jobs')"
+                  style="justify-content: flex-start"
+                >
+                  💼 Browse jobs
+                </button>
+                <button
+                  class="btn btn-ghost"
+                  onclick="navigate('my-applications')"
+                  style="justify-content: flex-start"
+                >
+                  📋 My applications
+                </button>
+                <button
+                  class="btn btn-ghost"
+                  onclick="openProjectModal()"
+                  style="justify-content: flex-start"
+                >
+                  ➕ Post a project
+                </button>
+                <button
+                  class="btn btn-ghost"
+                  onclick="navigate('messages')"
+                  style="justify-content: flex-start"
+                >
+                  💬 Messages
+                </button>
+              </div>
             </div>
           </div>
-          <div style="margin-bottom:8px">
-            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
-              <span style="color:var(--muted)">Profile completeness</span>
-              <span id="profilePct" style="color:var(--accent);font-weight:600">0%</span>
+          <div id="dashPending" style="margin-top: 24px"></div>
+        </div>
+
+        <!-- RESEARCHERS PAGE -->
+        <div class="page" id="page-researchers">
+          <div class="section-head">
+            <h1>Find Researchers</h1>
+            <span class="count" id="researcherCount"></span>
+          </div>
+          <div class="filter-bar">
+            <input
+              id="rSearch"
+              type="text"
+              placeholder="🔍 Search by name or bio..."
+              oninput="debounceLoadResearchers()"
+            />
+            <input
+              id="rField"
+              type="text"
+              placeholder="Research field (e.g. CRISPR)"
+              oninput="debounceLoadResearchers()"
+            />
+            <input
+              id="rInstitution"
+              type="text"
+              placeholder="Institution"
+              oninput="debounceLoadResearchers()"
+            />
+            <select id="rPosition" onchange="loadResearchers()">
+              <option value="">All positions</option>
+              <option value="PhD Student">PhD Student</option>
+              <option value="Postdoc">Postdoc</option>
+              <option value="Research Scientist">Research Scientist</option>
+              <option value="Assistant Professor">Assistant Professor</option>
+              <option value="Associate Professor">Associate Professor</option>
+              <option value="Professor">Professor</option>
+              <option value="Industry">Industry</option>
+            </select>
+          </div>
+          <div
+            id="activeFilters"
+            style="
+              display: flex;
+              gap: 8px;
+              flex-wrap: wrap;
+              margin-bottom: 16px;
+            "
+          ></div>
+          <div id="researcherList"></div>
+        </div>
+
+        <!-- RESEARCHER PROFILE VIEW -->
+        <div class="page" id="page-researcher-profile">
+          <div id="researcherProfileContent"></div>
+        </div>
+
+        <!-- JOBS PAGE -->
+        <div class="page" id="page-jobs">
+          <div class="section-head">
+            <h1>Research Jobs</h1>
+            <div style="display: flex; gap: 8px; align-items: center">
+              <button
+                class="btn btn-ghost btn-sm"
+                id="myAppsBtn"
+                onclick="navigate('my-applications')"
+                style="display: none"
+              >
+                📋 My Applications
+              </button>
+              <button
+                class="btn btn-primary btn-sm"
+                id="postJobBtn"
+                onclick="openJobModal()"
+                style="display: none"
+              >
+                + Post Job
+              </button>
             </div>
-            <div class="progress-bar"><div class="progress-bar-fill" id="profileBar" style="width:0%"></div></div>
+          </div>
+          <div class="filter-bar">
+            <select id="jType" onchange="loadJobs()">
+              <option value="">All types</option>
+              <option value="postdoc">Postdoc</option>
+              <option value="faculty">Faculty</option>
+              <option value="phd">PhD</option>
+              <option value="industry">Industry</option>
+              <option value="research-scientist">Research Scientist</option>
+            </select>
+            <input
+              id="jField"
+              type="text"
+              placeholder="Research field"
+              oninput="debounceLoadJobs()"
+            />
+          </div>
+          <div id="jobList"></div>
+        </div>
+
+        <!-- JOB DETAIL VIEW -->
+        <div class="page" id="page-job-detail">
+          <div id="jobDetailContent"></div>
+        </div>
+
+        <!-- MY APPLICATIONS PAGE -->
+        <div class="page" id="page-my-applications">
+          <div class="section-head">
+            <h1>My Applications</h1>
+            <button class="btn btn-ghost btn-sm" onclick="navigate('jobs')">
+              ← Browse Jobs
+            </button>
+          </div>
+          <div id="myApplicationsContent"></div>
+        </div>
+
+        <!-- PROFILE PAGE -->
+        <div class="page" id="page-profile">
+          <div class="section-head"><h1>My Profile</h1></div>
+          <div
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px"
+            id="profileEditGrid"
+          >
+            <div>
+              <div class="card" style="margin-bottom: 20px">
+                <div
+                  style="
+                    display: flex;
+                    gap: 16px;
+                    align-items: center;
+                    margin-bottom: 20px;
+                  "
+                >
+                  <div class="avatar avatar-lg" id="profileAvatar">?</div>
+                  <div>
+                    <div
+                      style="
+                        font-family: var(--font-head);
+                        font-size: 18px;
+                        font-weight: 700;
+                      "
+                      id="profileName"
+                    >
+                      —
+                    </div>
+                    <div
+                      style="color: var(--muted); font-size: 13px"
+                      id="profileRole"
+                    >
+                      —
+                    </div>
+                  </div>
+                </div>
+                <div style="margin-bottom: 8px">
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      font-size: 13px;
+                      margin-bottom: 6px;
+                    "
+                  >
+                    <span style="color: var(--muted)"
+                      >Profile completeness</span
+                    >
+                    <span
+                      id="profilePct"
+                      style="color: var(--accent); font-weight: 600"
+                      >0%</span
+                    >
+                  </div>
+                  <div class="progress-bar">
+                    <div
+                      class="progress-bar-fill"
+                      id="profileBar"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="card" style="padding: 0; overflow: hidden">
+                <div
+                  style="display: flex; border-bottom: 1px solid var(--border)"
+                >
+                  <button
+                    id="tabPubs"
+                    onclick="switchProfileTab('pubs')"
+                    style="
+                      flex: 1;
+                      padding: 14px;
+                      background: none;
+                      border: none;
+                      border-bottom: 2px solid var(--accent);
+                      color: var(--text);
+                      font-family: var(--font-body);
+                      font-size: 14px;
+                      font-weight: 600;
+                      cursor: pointer;
+                    "
+                  >
+                    Publications
+                  </button>
+                  <button
+                    id="tabProjs"
+                    onclick="switchProfileTab('projs')"
+                    style="
+                      flex: 1;
+                      padding: 14px;
+                      background: none;
+                      border: none;
+                      border-bottom: 2px solid transparent;
+                      color: var(--muted);
+                      font-family: var(--font-body);
+                      font-size: 14px;
+                      font-weight: 500;
+                      cursor: pointer;
+                    "
+                  >
+                    My Projects
+                  </button>
+                </div>
+                <div id="tabPubsContent" style="padding: 20px">
+                  <div id="pubList" style="margin-bottom: 14px"></div>
+                  <button class="btn btn-ghost btn-sm" onclick="openPubModal()">
+                    + Add publication
+                  </button>
+                </div>
+                <div id="tabProjsContent" style="padding: 20px; display: none">
+                  <div
+                    id="profileProjectList"
+                    style="margin-bottom: 14px"
+                  ></div>
+                  <button
+                    class="btn btn-ghost btn-sm"
+                    onclick="openProjectModal()"
+                  >
+                    + Post a project
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <h3
+                style="
+                  font-family: var(--font-head);
+                  font-weight: 700;
+                  margin-bottom: 20px;
+                  font-size: 15px;
+                "
+              >
+                Edit Profile
+              </h3>
+              <div
+                id="profileEditError"
+                class="alert alert-error"
+                style="display: none"
+              ></div>
+              <div
+                id="profileEditSuccess"
+                class="alert alert-success"
+                style="display: none"
+              ></div>
+              <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px"
+              >
+                <div class="form-group">
+                  <label>First Name</label><input id="pFirst" type="text" />
+                </div>
+                <div class="form-group">
+                  <label>Last Name</label><input id="pLast" type="text" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Institution</label
+                ><input
+                  id="pInstitution"
+                  type="text"
+                  placeholder="MIT, Stanford, etc."
+                />
+              </div>
+              <div class="form-group">
+                <label>Position</label
+                ><input
+                  id="pPosition"
+                  type="text"
+                  placeholder="PhD Student, Postdoc, Professor..."
+                />
+              </div>
+              <div class="form-group">
+                <label>Bio</label
+                ><textarea
+                  id="pBio"
+                  rows="4"
+                  placeholder="Tell others about your research..."
+                ></textarea>
+              </div>
+              <div class="form-group">
+                <label>Research Fields (comma-separated)</label
+                ><input
+                  id="pFields"
+                  type="text"
+                  placeholder="Machine Learning, NLP, Computer Vision"
+                />
+              </div>
+              <div class="form-group">
+                <label>H-Index</label
+                ><input id="pHIndex" type="number" placeholder="0" min="0" />
+              </div>
+              <button
+                class="btn btn-primary"
+                onclick="saveProfile()"
+                style="width: 100%; justify-content: center"
+              >
+                Save Changes
+              </button>
+            </div>
           </div>
         </div>
-        <div class="card" style="padding:0;overflow:hidden">
-          <div style="display:flex;border-bottom:1px solid var(--border)">
-            <button id="tabPubs" onclick="switchProfileTab('pubs')" style="flex:1;padding:14px;background:none;border:none;border-bottom:2px solid var(--accent);color:var(--text);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer">Publications</button>
-            <button id="tabProjs" onclick="switchProfileTab('projs')" style="flex:1;padding:14px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer">My Projects</button>
+
+        <!-- MESSAGES PAGE -->
+        <div class="page" id="page-messages">
+          <div class="section-head"><h1>Messages</h1></div>
+          <div id="messagesContent"></div>
+        </div>
+
+        <!-- CHAT PAGE -->
+        <div class="page" id="page-chat">
+          <div id="chatContent"></div>
+        </div>
+
+        <!-- PROJECTS PAGE -->
+        <div class="page" id="page-projects">
+          <div class="section-head">
+            <h1>Research Projects</h1>
+            <span class="count" id="projectCount"></span>
           </div>
-          <div id="tabPubsContent" style="padding:20px">
-            <div id="pubList" style="margin-bottom:14px"></div>
-            <button class="btn btn-ghost btn-sm" onclick="openPubModal()">+ Add publication</button>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 16px;
+              flex-wrap: wrap;
+              gap: 12px;
+            "
+          >
+            <div class="filter-bar" style="margin-bottom: 0; flex: 1">
+              <input
+                id="pjField"
+                type="text"
+                placeholder="Research field"
+                oninput="debounceLoadProjects()"
+              />
+              <select id="pjStatus" onchange="loadProjects()">
+                <option value="">All statuses</option>
+                <option value="seeking-collaborators">
+                  Seeking Collaborators
+                </option>
+                <option value="ongoing">Ongoing</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+            <button
+              class="btn btn-primary btn-sm"
+              id="postProjectBtn"
+              onclick="openProjectModal()"
+              style="display: none; white-space: nowrap"
+            >
+              + Post Project
+            </button>
           </div>
-          <div id="tabProjsContent" style="padding:20px;display:none">
-            <div id="profileProjectList" style="margin-bottom:14px"></div>
-            <button class="btn btn-ghost btn-sm" onclick="openProjectModal()">+ Post a project</button>
+          <div id="projectList"></div>
+        </div>
+
+        <!-- MY PROJECTS PAGE -->
+        <div class="page" id="page-my-projects">
+          <div class="section-head">
+            <h1>My Projects</h1>
+            <button class="btn btn-primary btn-sm" onclick="openProjectModal()">
+              + New Project
+            </button>
+          </div>
+          <div id="myProjectList"></div>
+        </div>
+      </main>
+    </div>
+
+    <!-- ── MODALS ── -->
+
+    <div class="modal-overlay" id="projectModal">
+      <div class="modal">
+        <button class="modal-close" onclick="closeModal('projectModal')">
+          ✕
+        </button>
+        <h2 id="projectModalTitle">Post a Project</h2>
+        <div
+          id="projectModalError"
+          class="alert alert-error"
+          style="display: none"
+        ></div>
+        <div class="form-group">
+          <label>Project Title</label
+          ><input
+            id="pmTitle"
+            placeholder="e.g. CRISPR-based gene therapy for rare diseases"
+          />
+        </div>
+        <div class="form-group">
+          <label>Description</label
+          ><textarea
+            id="pmDesc"
+            rows="5"
+            placeholder="Describe your project, goals, methods, and what kind of collaborators you're looking for..."
+          ></textarea>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+          <div class="form-group">
+            <label>Research Field</label
+            ><input id="pmField" placeholder="e.g. Genomics, ML, Physics" />
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="pmStatus">
+              <option value="ongoing">Ongoing</option>
+              <option value="seeking-collaborators">
+                Seeking Collaborators
+              </option>
+              <option value="completed">Completed</option>
+            </select>
           </div>
         </div>
+        <input type="hidden" id="pmEditId" />
+        <button
+          class="btn btn-primary"
+          onclick="submitProject()"
+          style="width: 100%; justify-content: center"
+        >
+          Post Project
+        </button>
       </div>
-      <div class="card">
-        <h3 style="font-family:var(--font-head);font-weight:700;margin-bottom:20px;font-size:15px">Edit Profile</h3>
-        <div id="profileEditError" class="alert alert-error" style="display:none"></div>
-        <div id="profileEditSuccess" class="alert alert-success" style="display:none"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="form-group"><label>First Name</label><input id="pFirst" type="text"></div>
-          <div class="form-group"><label>Last Name</label><input id="pLast" type="text"></div>
+    </div>
+
+    <div class="modal-overlay" id="jobModal">
+      <div class="modal">
+        <button class="modal-close" onclick="closeModal('jobModal')">✕</button>
+        <h2>Post a Job</h2>
+        <div
+          id="jobModalError"
+          class="alert alert-error"
+          style="display: none"
+        ></div>
+        <div class="form-group">
+          <label>Job Title</label
+          ><input
+            id="jTitle"
+            placeholder="Postdoctoral Researcher in Genomics"
+          />
         </div>
-        <div class="form-group"><label>Institution</label><input id="pInstitution" type="text" placeholder="MIT, Stanford, etc."></div>
-        <div class="form-group"><label>Position</label><input id="pPosition" type="text" placeholder="PhD Student, Postdoc, Professor..."></div>
-        <div class="form-group"><label>Bio</label><textarea id="pBio" rows="4" placeholder="Tell others about your research..."></textarea></div>
-        <div class="form-group"><label>Research Fields (comma-separated)</label><input id="pFields" type="text" placeholder="Machine Learning, NLP, Computer Vision"></div>
-        <div class="form-group"><label>H-Index</label><input id="pHIndex" type="number" placeholder="0" min="0"></div>
-        <button class="btn btn-primary" onclick="saveProfile()" style="width:100%;justify-content:center">Save Changes</button>
+        <div class="form-group">
+          <label>Organization</label
+          ><input id="jOrg" placeholder="MIT, Broad Institute..." />
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+          <div class="form-group">
+            <label>Job Type</label>
+            <select id="jTypeNew">
+              <option value="postdoc">Postdoc</option>
+              <option value="faculty">Faculty</option>
+              <option value="phd">PhD</option>
+              <option value="industry">Industry</option>
+              <option value="research-scientist">Research Scientist</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Location</label
+            ><input id="jLoc" placeholder="Cambridge, MA / Remote" />
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+          <div class="form-group">
+            <label>Salary Min ($)</label
+            ><input id="jSalMin" type="number" placeholder="60000" />
+          </div>
+          <div class="form-group">
+            <label>Salary Max ($)</label
+            ><input id="jSalMax" type="number" placeholder="80000" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Required Fields (comma-separated)</label
+          ><input id="jReqFields" placeholder="CRISPR, Molecular Biology" />
+        </div>
+        <div class="form-group">
+          <label>Description</label
+          ><textarea
+            id="jDesc"
+            rows="4"
+            placeholder="Describe the role, requirements, and how to apply..."
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label>Application Email</label
+          ><input id="jAppEmail" type="email" placeholder="jobs@yourlab.edu" />
+        </div>
+        <button
+          class="btn btn-primary"
+          onclick="submitJob()"
+          style="width: 100%; justify-content: center; padding: 12px"
+        >
+          Post Job
+        </button>
       </div>
     </div>
-  </div>
 
-  <!-- MESSAGES PAGE -->
-  <div class="page" id="page-messages">
-    <div class="section-head"><h1>Messages</h1></div>
-    <div id="messagesContent"></div>
-  </div>
-
-  <!-- CHAT PAGE -->
-  <div class="page" id="page-chat">
-    <div id="chatContent"></div>
-  </div>
-
-  <!-- PROJECTS PAGE -->
-  <div class="page" id="page-projects">
-    <div class="section-head">
-      <h1>Research Projects</h1>
-      <span class="count" id="projectCount"></span>
-    </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
-      <div class="filter-bar" style="margin-bottom:0;flex:1">
-        <input id="pjField" type="text" placeholder="Research field" oninput="debounceLoadProjects()">
-        <select id="pjStatus" onchange="loadProjects()">
-          <option value="">All statuses</option>
-          <option value="seeking-collaborators">Seeking Collaborators</option>
-          <option value="ongoing">Ongoing</option>
-          <option value="completed">Completed</option>
-        </select>
-      </div>
-      <button class="btn btn-primary btn-sm" id="postProjectBtn" onclick="openProjectModal()" style="display:none;white-space:nowrap">+ Post Project</button>
-    </div>
-    <div id="projectList"></div>
-  </div>
-
-  <!-- MY PROJECTS PAGE -->
-  <div class="page" id="page-my-projects">
-    <div class="section-head">
-      <h1>My Projects</h1>
-      <button class="btn btn-primary btn-sm" onclick="openProjectModal()">+ New Project</button>
-    </div>
-    <div id="myProjectList"></div>
-  </div>
-
-</main>
-</div>
-
-<!-- ── MODALS ── -->
-
-<div class="modal-overlay" id="projectModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('projectModal')">✕</button>
-    <h2 id="projectModalTitle">Post a Project</h2>
-    <div id="projectModalError" class="alert alert-error" style="display:none"></div>
-    <div class="form-group"><label>Project Title</label><input id="pmTitle" placeholder="e.g. CRISPR-based gene therapy for rare diseases"></div>
-    <div class="form-group"><label>Description</label><textarea id="pmDesc" rows="5" placeholder="Describe your project, goals, methods, and what kind of collaborators you're looking for..."></textarea></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="form-group"><label>Research Field</label><input id="pmField" placeholder="e.g. Genomics, ML, Physics"></div>
-      <div class="form-group"><label>Status</label>
-        <select id="pmStatus">
-          <option value="ongoing">Ongoing</option>
-          <option value="seeking-collaborators">Seeking Collaborators</option>
-          <option value="completed">Completed</option>
-        </select>
+    <div class="modal-overlay" id="pubModal">
+      <div class="modal">
+        <button class="modal-close" onclick="closeModal('pubModal')">✕</button>
+        <h2>Add Publication</h2>
+        <div
+          id="pubModalError"
+          class="alert alert-error"
+          style="display: none"
+        ></div>
+        <div class="form-group">
+          <label>Title</label
+          ><input id="pubTitle" placeholder="Publication title" />
+        </div>
+        <div class="form-group">
+          <label>Authors (comma-separated)</label
+          ><input id="pubAuthors" placeholder="Smith A., Jones B., ..." />
+        </div>
+        <div class="form-group">
+          <label>Journal</label
+          ><input id="pubJournal" placeholder="Nature, Science, Cell..." />
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+          <div class="form-group">
+            <label>Publication Date</label><input id="pubDate" type="date" />
+          </div>
+          <div class="form-group">
+            <label>DOI</label
+            ><input id="pubDoi" placeholder="10.1234/example" />
+          </div>
+        </div>
+        <button
+          class="btn btn-primary"
+          onclick="submitPub()"
+          style="width: 100%; justify-content: center; padding: 12px"
+        >
+          Add Publication
+        </button>
       </div>
     </div>
-    <input type="hidden" id="pmEditId">
-    <button class="btn btn-primary" onclick="submitProject()" style="width:100%;justify-content:center">Post Project</button>
-  </div>
-</div>
 
-<div class="modal-overlay" id="jobModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('jobModal')">✕</button>
-    <h2>Post a Job</h2>
-    <div id="jobModalError" class="alert alert-error" style="display:none"></div>
-    <div class="form-group"><label>Job Title</label><input id="jTitle" placeholder="Postdoctoral Researcher in Genomics"></div>
-    <div class="form-group"><label>Organization</label><input id="jOrg" placeholder="MIT, Broad Institute..."></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="form-group"><label>Job Type</label>
-        <select id="jTypeNew">
-          <option value="postdoc">Postdoc</option>
-          <option value="faculty">Faculty</option>
-          <option value="phd">PhD</option>
-          <option value="industry">Industry</option>
-          <option value="research-scientist">Research Scientist</option>
-        </select>
+    <div class="modal-overlay" id="applyModal">
+      <div class="modal">
+        <button class="modal-close" onclick="closeModal('applyModal')">
+          ✕
+        </button>
+        <h2>Apply for Job</h2>
+        <p
+          style="color: var(--muted); font-size: 14px; margin-bottom: 20px"
+          id="applyJobTitle"
+        ></p>
+        <div class="form-group">
+          <label>Message to Employer (optional)</label
+          ><textarea
+            id="applyMessage"
+            rows="4"
+            placeholder="Briefly describe your interest and relevant experience..."
+          ></textarea>
+        </div>
+        <button
+          class="btn btn-green"
+          onclick="submitApplication()"
+          style="width: 100%; justify-content: center; padding: 12px"
+        >
+          Submit Application
+        </button>
       </div>
-      <div class="form-group"><label>Location</label><input id="jLoc" placeholder="Cambridge, MA / Remote"></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="form-group"><label>Salary Min ($)</label><input id="jSalMin" type="number" placeholder="60000"></div>
-      <div class="form-group"><label>Salary Max ($)</label><input id="jSalMax" type="number" placeholder="80000"></div>
+
+    <div class="modal-overlay" id="msgModal">
+      <div class="modal">
+        <button class="modal-close" onclick="closeModal('msgModal')">✕</button>
+        <h2 id="msgModalTitle">Send Message</h2>
+        <div class="form-group">
+          <label>Message</label
+          ><textarea
+            id="msgContent"
+            rows="4"
+            placeholder="Hi, I saw your work on..."
+            onkeydown="if(event.ctrlKey&&event.key==='Enter')sendQuickMsg()"
+          ></textarea>
+        </div>
+        <button
+          class="btn btn-primary"
+          onclick="sendQuickMsg()"
+          style="width: 100%; justify-content: center; padding: 12px"
+        >
+          Send Message
+        </button>
+      </div>
     </div>
-    <div class="form-group"><label>Required Fields (comma-separated)</label><input id="jReqFields" placeholder="CRISPR, Molecular Biology"></div>
-    <div class="form-group"><label>Description</label><textarea id="jDesc" rows="4" placeholder="Describe the role, requirements, and how to apply..."></textarea></div>
-    <div class="form-group"><label>Application Email</label><input id="jAppEmail" type="email" placeholder="jobs@yourlab.edu"></div>
-    <button class="btn btn-primary" onclick="submitJob()" style="width:100%;justify-content:center;padding:12px">Post Job</button>
-  </div>
-</div>
 
-<div class="modal-overlay" id="pubModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('pubModal')">✕</button>
-    <h2>Add Publication</h2>
-    <div id="pubModalError" class="alert alert-error" style="display:none"></div>
-    <div class="form-group"><label>Title</label><input id="pubTitle" placeholder="Publication title"></div>
-    <div class="form-group"><label>Authors (comma-separated)</label><input id="pubAuthors" placeholder="Smith A., Jones B., ..."></div>
-    <div class="form-group"><label>Journal</label><input id="pubJournal" placeholder="Nature, Science, Cell..."></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="form-group"><label>Publication Date</label><input id="pubDate" type="date"></div>
-      <div class="form-group"><label>DOI</label><input id="pubDoi" placeholder="10.1234/example"></div>
-    </div>
-    <button class="btn btn-primary" onclick="submitPub()" style="width:100%;justify-content:center;padding:12px">Add Publication</button>
-  </div>
-</div>
+    <script>
+      // ─── STATE ────────────────────────────────────────────────────────────────────
+      let token = localStorage.getItem("rc_token");
+      let currentUser = JSON.parse(localStorage.getItem("rc_user") || "null");
+      let currentPage = "home";
+      let applyingToJobId = null;
+      let msgTargetId = null;
+      let chatWithId = null;
+      let chatWithName = null;
+      let rDebounce, jDebounce;
+      let myConnections = new Set(); // connected user IDs
+      let pendingFrom = new Map(); // userId → connectionId (incoming pending)
+      let sentRequests = new Set(); // user IDs I've sent outgoing requests to (session)
+      let pendingCount = 0; // live count shown in notification bell
+      let unreadMessages = 0; // live unread message count shown on Messages link
+      let _notifAt = 0; // timestamp of last background refresh
+      let _popstateNav = false; // true while popstate is handling back/forward
 
-<div class="modal-overlay" id="applyModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('applyModal')">✕</button>
-    <h2>Apply for Job</h2>
-    <p style="color:var(--muted);font-size:14px;margin-bottom:20px" id="applyJobTitle"></p>
-    <div class="form-group"><label>Message to Employer (optional)</label><textarea id="applyMessage" rows="4" placeholder="Briefly describe your interest and relevant experience..."></textarea></div>
-    <button class="btn btn-green" onclick="submitApplication()" style="width:100%;justify-content:center;padding:12px">Submit Application</button>
-  </div>
-</div>
+      const API = ""; // same origin
 
-<div class="modal-overlay" id="msgModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('msgModal')">✕</button>
-    <h2 id="msgModalTitle">Send Message</h2>
-    <div class="form-group"><label>Message</label><textarea id="msgContent" rows="4" placeholder="Hi, I saw your work on..." onkeydown="if(event.ctrlKey&&event.key==='Enter')sendQuickMsg()"></textarea></div>
-    <button class="btn btn-primary" onclick="sendQuickMsg()" style="width:100%;justify-content:center;padding:12px">Send Message</button>
-  </div>
-</div>
+      // ─── API HELPERS ──────────────────────────────────────────────────────────────
+      async function api(path, opts = {}) {
+        const headers = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+        const res = await fetch(API + "/api" + path, { headers, ...opts });
+        const data = await res.json();
+        if (!res.ok)
+          throw new Error(
+            data.message ||
+              (data.messages && data.messages[0]) ||
+              data.error ||
+              "Request failed",
+          );
+        return data;
+      }
 
-<script>
-// ─── STATE ────────────────────────────────────────────────────────────────────
-let token = localStorage.getItem('rc_token');
-let currentUser = JSON.parse(localStorage.getItem('rc_user') || 'null');
-let currentPage = 'home';
-let applyingToJobId = null;
-let msgTargetId = null;
-let chatWithId = null;
-let chatWithName = null;
-let rDebounce, jDebounce;
-let myConnections = new Set();  // connected user IDs
-let pendingFrom   = new Map();  // userId → connectionId (incoming pending)
-let sentRequests  = new Set();  // user IDs I've sent outgoing requests to (session)
-let pendingCount  = 0;          // live count shown in notification bell
-let unreadMessages = 0;         // live unread message count shown on Messages link
-let _notifAt      = 0;          // timestamp of last background refresh
-let _popstateNav  = false;      // true while popstate is handling back/forward
+      // ─── NAVIGATION ───────────────────────────────────────────────────────────────
+      // ─── HISTORY / ROUTING ────────────────────────────────────────────────────────
 
-const API = '';  // same origin
+      function pageToPath(page, extra) {
+        if (page === "home") return "/";
+        if (page === "researcher-profile") return "/researchers/" + extra;
+        if (page === "job-detail") return "/jobs/" + extra;
+        if (page === "chat") return "/messages/" + (extra?.id || extra || "");
+        return "/" + page;
+      }
 
-// ─── API HELPERS ──────────────────────────────────────────────────────────────
-async function api(path, opts = {}) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(API + '/api' + path, { headers, ...opts });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || (data.messages && data.messages[0]) || data.error || 'Request failed');
-  return data;
-}
+      function pathToPage(path) {
+        const p = (path || "/").replace(/\/$/, "") || "/";
+        if (p === "/") return { page: "home" };
+        const [, seg1, seg2] = p.split("/");
+        if (seg1 === "researchers" && seg2)
+          return { page: "researcher-profile", extra: seg2 };
+        if (seg1 === "jobs" && seg2) return { page: "job-detail", extra: seg2 };
+        if (seg1 === "messages" && seg2)
+          return { page: "chat", extra: { id: seg2, name: "" } };
+        return { page: seg1 || "home" };
+      }
 
-// ─── NAVIGATION ───────────────────────────────────────────────────────────────
-// ─── HISTORY / ROUTING ────────────────────────────────────────────────────────
+      window.addEventListener("popstate", (e) => {
+        const state = e.state || pathToPage(location.pathname);
+        _popstateNav = true;
+        navigate(state.page || "home", state.extra);
+        _popstateNav = false;
+      });
 
-function pageToPath(page, extra) {
-  if (page === 'home')               return '/';
-  if (page === 'researcher-profile') return '/researchers/' + extra;
-  if (page === 'job-detail')         return '/jobs/' + extra;
-  if (page === 'chat')               return '/messages/' + (extra?.id || extra || '');
-  return '/' + page;
-}
+      function navigate(page, extra) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        const el = document.getElementById("page-" + page);
+        if (el) {
+          el.classList.add("active");
+          currentPage = page;
+        }
+        renderNav();
+        refreshAllCounts();
+        window.scrollTo(0, 0);
 
-function pathToPage(path) {
-  const p = (path || '/').replace(/\/$/, '') || '/';
-  if (p === '/') return { page: 'home' };
-  const [, seg1, seg2] = p.split('/');
-  if (seg1 === 'researchers' && seg2) return { page: 'researcher-profile', extra: seg2 };
-  if (seg1 === 'jobs'        && seg2) return { page: 'job-detail',         extra: seg2 };
-  if (seg1 === 'messages'    && seg2) return { page: 'chat',               extra: { id: seg2, name: '' } };
-  return { page: seg1 || 'home' };
-}
+        if (!_popstateNav) {
+          history.pushState({ page, extra }, "", pageToPath(page, extra));
+        }
 
-window.addEventListener('popstate', e => {
-  const state = e.state || pathToPage(location.pathname);
-  _popstateNav = true;
-  navigate(state.page || 'home', state.extra);
-  _popstateNav = false;
-});
+        if (page === "home") renderHomeCTA();
+        if (page === "researchers") loadResearchers();
+        if (page === "jobs") {
+          loadJobs();
+          if (token) {
+            document.getElementById("postJobBtn").style.display = "";
+            document.getElementById("myAppsBtn").style.display = "";
+          }
+        }
+        if (page === "projects") {
+          loadProjects();
+          if (token)
+            document.getElementById("postProjectBtn").style.display = "";
+        }
+        if (page === "my-projects") loadMyProjects();
+        if (page === "my-applications") loadMyApplications();
+        if (page === "dashboard") loadDashboard();
+        if (page === "profile") loadProfile();
+        if (page === "messages") loadMessages();
+        if (page === "researcher-profile" && extra)
+          loadResearcherProfile(extra);
+        if (page === "job-detail" && extra) loadJobDetail(extra);
+        if (page === "chat" && extra) {
+          chatWithId = extra.id;
+          chatWithName = extra.name;
+          loadChat();
+        }
+      }
 
-function navigate(page, extra) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  const el = document.getElementById('page-' + page);
-  if (el) { el.classList.add('active'); currentPage = page; }
-  renderNav();
-  refreshAllCounts();
-  window.scrollTo(0, 0);
-
-  if (!_popstateNav) {
-    history.pushState({ page, extra }, '', pageToPath(page, extra));
-  }
-
-  if (page === 'home') renderHomeCTA();
-  if (page === 'researchers') loadResearchers();
-  if (page === 'jobs') { loadJobs(); if (token) { document.getElementById('postJobBtn').style.display = ''; document.getElementById('myAppsBtn').style.display = ''; } }
-  if (page === 'projects') { loadProjects(); if (token) document.getElementById('postProjectBtn').style.display = ''; }
-  if (page === 'my-projects') loadMyProjects();
-  if (page === 'my-applications') loadMyApplications();
-  if (page === 'dashboard') loadDashboard();
-  if (page === 'profile') loadProfile();
-  if (page === 'messages') loadMessages();
-  if (page === 'researcher-profile' && extra) loadResearcherProfile(extra);
-  if (page === 'job-detail' && extra) loadJobDetail(extra);
-  if (page === 'chat' && extra) { chatWithId = extra.id; chatWithName = extra.name; loadChat(); }
-}
-
-function renderNav() {
-  const nav = document.getElementById('navLinks');
-  if (token) {
-    const bell = `
-      <button class="nav-bell" onclick="navigate('dashboard')" title="${pendingCount ? pendingCount + ' pending connection request' + (pendingCount > 1 ? 's' : '') : 'Notifications'}">
-        🔔${pendingCount > 0 ? `<span class="nbadge">${pendingCount > 9 ? '9+' : pendingCount}</span>` : ''}
+      function renderNav() {
+        const nav = document.getElementById("navLinks");
+        if (token) {
+          const bell = `
+      <button class="nav-bell" onclick="navigate('dashboard')" title="${pendingCount ? pendingCount + " pending connection request" + (pendingCount > 1 ? "s" : "") : "Notifications"}">
+        🔔${pendingCount > 0 ? `<span class="nbadge">${pendingCount > 9 ? "9+" : pendingCount}</span>` : ""}
       </button>`;
-    nav.innerHTML = `
-      <a href="#" onclick="navigate('dashboard')" class="${currentPage==='dashboard'?'active':''}">Dashboard</a>
-      <a href="#" onclick="navigate('researchers')" class="${currentPage==='researchers'||currentPage==='researcher-profile'?'active':''}">Researchers</a>
-      <a href="#" onclick="navigate('projects')" class="${currentPage==='projects'||currentPage==='my-projects'?'active':''}">Projects</a>
-      <a href="#" onclick="navigate('jobs')" class="${currentPage==='jobs'||currentPage==='job-detail'?'active':''}">Jobs</a>
-      <a href="#" onclick="navigate('messages')" class="${currentPage==='messages'||currentPage==='chat'?'active':''}">Messages${unreadMessages > 0 ? `<span class="nbadge" style="top:-3px;right:2px">${unreadMessages > 9 ? '9+' : unreadMessages}</span>` : ''}</a>
-      <a href="#" onclick="navigate('profile')" class="${currentPage==='profile'?'active':''}">Profile</a>
+          nav.innerHTML = `
+      <a href="#" onclick="navigate('dashboard')" class="${currentPage === "dashboard" ? "active" : ""}">Dashboard</a>
+      <a href="#" onclick="navigate('researchers')" class="${currentPage === "researchers" || currentPage === "researcher-profile" ? "active" : ""}">Researchers</a>
+      <a href="#" onclick="navigate('projects')" class="${currentPage === "projects" || currentPage === "my-projects" ? "active" : ""}">Projects</a>
+      <a href="#" onclick="navigate('jobs')" class="${currentPage === "jobs" || currentPage === "job-detail" ? "active" : ""}">Jobs</a>
+      <a href="#" onclick="navigate('messages')" class="${currentPage === "messages" || currentPage === "chat" ? "active" : ""}">Messages${unreadMessages > 0 ? `<span class="nbadge" style="top:-3px;right:2px">${unreadMessages > 9 ? "9+" : unreadMessages}</span>` : ""}</a>
+      <a href="#" onclick="navigate('profile')" class="${currentPage === "profile" ? "active" : ""}">Profile</a>
       ${bell}
       <button class="btn btn-danger btn-sm" onclick="doLogout()" style="margin-left:4px">Logout</button>
     `;
-  } else {
-    nav.innerHTML = `
+        } else {
+          nav.innerHTML = `
       <a href="#" onclick="navigate('researchers')">Researchers</a>
       <a href="#" onclick="navigate('projects')">Projects</a>
       <a href="#" onclick="navigate('jobs')">Jobs</a>
       <a href="#" onclick="navigate('login')">Sign In</a>
       <button class="btn btn-primary btn-sm" onclick="navigate('signup')" style="margin-left:4px">Get Started</button>
     `;
-  }
-}
+        }
+      }
 
-// Fetch pending connections + unread messages in parallel; throttled to once per 15s
-async function refreshAllCounts() {
-  if (!token) return;
-  const now = Date.now();
-  if (now - _notifAt < 15000) return;
-  _notifAt = now;
-  try {
-    const [notifs, msgs] = await Promise.all([
-      api('/connections/pending').catch(() => ({ pending: [] })),
-      api('/messages').catch(() => ({ conversations: [] }))
-    ]);
-    const freshPending = (notifs.pending || []).length;
-    const freshUnread  = (msgs.conversations || []).reduce((s, c) => s + (c.unreadCount || 0), 0);
-    if (freshPending !== pendingCount || freshUnread !== unreadMessages) {
-      pendingCount   = freshPending;
-      unreadMessages = freshUnread;
-      renderNav();
-    }
-  } catch(e) {}
-}
+      // Fetch pending connections + unread messages in parallel; throttled to once per 15s
+      async function refreshAllCounts() {
+        if (!token) return;
+        const now = Date.now();
+        if (now - _notifAt < 15000) return;
+        _notifAt = now;
+        try {
+          const [notifs, msgs] = await Promise.all([
+            api("/connections/pending").catch(() => ({ pending: [] })),
+            api("/messages").catch(() => ({ conversations: [] })),
+          ]);
+          const freshPending = (notifs.pending || []).length;
+          const freshUnread = (msgs.conversations || []).reduce(
+            (s, c) => s + (c.unreadCount || 0),
+            0,
+          );
+          if (freshPending !== pendingCount || freshUnread !== unreadMessages) {
+            pendingCount = freshPending;
+            unreadMessages = freshUnread;
+            renderNav();
+          }
+        } catch (e) {}
+      }
 
-function renderHomeCTA() {
-  const cta = document.getElementById('heroCta');
-  cta.innerHTML = token
-    ? `<button class="btn btn-primary" onclick="navigate('dashboard')" style="padding:12px 28px;font-size:16px">Go to Dashboard →</button>`
-    : `<button class="btn btn-primary" onclick="navigate('signup')" style="padding:12px 28px;font-size:16px">Get Started Free</button>
+      function renderHomeCTA() {
+        const cta = document.getElementById("heroCta");
+        cta.innerHTML = token
+          ? `<button class="btn btn-primary" onclick="navigate('dashboard')" style="padding:12px 28px;font-size:16px">Go to Dashboard →</button>`
+          : `<button class="btn btn-primary" onclick="navigate('signup')" style="padding:12px 28px;font-size:16px">Get Started Free</button>
        <button class="btn btn-ghost" onclick="navigate('login')" style="padding:12px 28px;font-size:16px">Sign In</button>`;
-}
+      }
 
-// ─── AUTH ─────────────────────────────────────────────────────────────────────
-async function doRegister() {
-  const btn = document.getElementById('signupBtn');
-  const err = document.getElementById('signupError');
-  err.style.display = 'none';
-  btn.disabled = true; btn.textContent = 'Creating account...';
-  try {
-    const d = await api('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ email: v('regEmail'), password: v('regPass'), firstName: v('regFirst'), lastName: v('regLast') })
-    });
-    setAuth(d.token, d.user);
-    navigate('profile');
-  } catch(e) {
-    err.textContent = e.message; err.style.display = '';
-  } finally { btn.disabled = false; btn.textContent = 'Create Account'; }
-}
+      // ─── AUTH ─────────────────────────────────────────────────────────────────────
+      async function doRegister() {
+        const btn = document.getElementById("signupBtn");
+        const err = document.getElementById("signupError");
+        err.style.display = "none";
+        btn.disabled = true;
+        btn.textContent = "Creating account...";
+        try {
+          const d = await api("/auth/register", {
+            method: "POST",
+            body: JSON.stringify({
+              email: v("regEmail"),
+              password: v("regPass"),
+              firstName: v("regFirst"),
+              lastName: v("regLast"),
+            }),
+          });
+          setAuth(d.token, d.user);
+          navigate("profile");
+        } catch (e) {
+          err.textContent = e.message;
+          err.style.display = "";
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Create Account";
+        }
+      }
 
-async function doLogin() {
-  const err = document.getElementById('loginError');
-  err.style.display = 'none';
-  try {
-    const d = await api('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email: v('loginEmail'), password: v('loginPass') })
-    });
-    setAuth(d.token, d.user);
-    navigate('dashboard');
-  } catch(e) {
-    err.textContent = e.message; err.style.display = '';
-  }
-}
+      async function doLogin() {
+        const err = document.getElementById("loginError");
+        err.style.display = "none";
+        try {
+          const d = await api("/auth/login", {
+            method: "POST",
+            body: JSON.stringify({
+              email: v("loginEmail"),
+              password: v("loginPass"),
+            }),
+          });
+          setAuth(d.token, d.user);
+          navigate("dashboard");
+        } catch (e) {
+          err.textContent = e.message;
+          err.style.display = "";
+        }
+      }
 
-function doLogout() {
-  token = null; currentUser = null;
-  localStorage.removeItem('rc_token'); localStorage.removeItem('rc_user');
-  navigate('home');
-}
+      function doLogout() {
+        token = null;
+        currentUser = null;
+        localStorage.removeItem("rc_token");
+        localStorage.removeItem("rc_user");
+        navigate("home");
+      }
 
-function setAuth(t, u) {
-  token = t; currentUser = u;
-  localStorage.setItem('rc_token', t);
-  localStorage.setItem('rc_user', JSON.stringify(u));
-}
+      function setAuth(t, u) {
+        token = t;
+        currentUser = u;
+        localStorage.setItem("rc_token", t);
+        localStorage.setItem("rc_user", JSON.stringify(u));
+      }
 
-// ─── DASHBOARD ────────────────────────────────────────────────────────────────
-async function loadDashboard() {
-  if (!token) { navigate('login'); return; }
-  try {
-    const user = await api('/auth/me');
-    const u = user.user;
-    currentUser = { ...currentUser, ...u };
-    document.getElementById('dashGreeting').textContent = `Hello, ${u.firstName || 'Researcher'} 👋`;
+      // ─── DASHBOARD ────────────────────────────────────────────────────────────────
+      async function loadDashboard() {
+        if (!token) {
+          navigate("login");
+          return;
+        }
+        try {
+          const user = await api("/auth/me");
+          const u = user.user;
+          currentUser = { ...currentUser, ...u };
+          document.getElementById("dashGreeting").textContent =
+            `Hello, ${u.firstName || "Researcher"} 👋`;
 
-    const [jobs, researchers, conns, pending] = await Promise.all([
-      api('/jobs?limit=1'),
-      api('/researchers?limit=1'),
-      api('/connections'),
-      api('/connections/pending')
-    ]);
+          const [jobs, researchers, conns, pending] = await Promise.all([
+            api("/jobs?limit=1"),
+            api("/researchers?limit=1"),
+            api("/connections"),
+            api("/connections/pending"),
+          ]);
 
-    myConnections = new Set(conns.connections || []);
-    pendingFrom   = new Map((pending.pending || []).map(p => [p.fromUserId, p.id]));
-    pendingCount  = pending.pending?.length || 0;
-    _notifAt      = Date.now();
-    renderNav();
+          myConnections = new Set(conns.connections || []);
+          pendingFrom = new Map(
+            (pending.pending || []).map((p) => [p.fromUserId, p.id]),
+          );
+          pendingCount = pending.pending?.length || 0;
+          _notifAt = Date.now();
+          renderNav();
 
-    document.getElementById('dashStats').innerHTML = `
+          document.getElementById("dashStats").innerHTML = `
       <div class="stat-card"><div class="stat-val">${researchers.total}</div><div class="stat-label">Researchers</div></div>
       <div class="stat-card"><div class="stat-val">${jobs.total}</div><div class="stat-label">Open Jobs</div></div>
       <div class="stat-card"><div class="stat-val">${u.hIndex || 0}</div><div class="stat-label">H-Index</div></div>
       <div class="stat-card" style="cursor:pointer" onclick="navigate('profile')"><div class="stat-val">${u.profileCompleteness || 0}%</div><div class="stat-label">Profile Complete</div></div>
     `;
-    const pct = u.profileCompleteness || 0;
-    document.getElementById('dashCompPct').textContent = pct + '%';
-    document.getElementById('dashCompBar').style.width = pct + '%';
+          const pct = u.profileCompleteness || 0;
+          document.getElementById("dashCompPct").textContent = pct + "%";
+          document.getElementById("dashCompBar").style.width = pct + "%";
 
-    const pendingEl = document.getElementById('dashPending');
-    if (!pendingEl) return;
-    const reqs = pending.pending || [];
-    if (!reqs.length) { pendingEl.innerHTML = ''; return; }
+          const pendingEl = document.getElementById("dashPending");
+          if (!pendingEl) return;
+          const reqs = pending.pending || [];
+          if (!reqs.length) {
+            pendingEl.innerHTML = "";
+            return;
+          }
 
-    const names = await Promise.all(
-      reqs.map(r => api('/researchers/' + r.fromUserId).catch(() => null))
-    );
+          const names = await Promise.all(
+            reqs.map((r) =>
+              api("/researchers/" + r.fromUserId).catch(() => null),
+            ),
+          );
 
-    pendingEl.innerHTML = `
+          pendingEl.innerHTML = `
       <h3 style="font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:14px">
         Pending Connection Requests
         <span style="background:var(--accent);color:#fff;font-size:11px;padding:2px 8px;border-radius:20px;font-family:var(--font-body);font-weight:600;vertical-align:middle;margin-left:6px">${reqs.length}</span>
       </h3>
       <div class="card" style="padding:0;overflow:hidden">
-        ${reqs.map((r, i) => {
-          const p    = names[i];
-          const name = p ? `${p.firstName} ${p.lastName}` : 'Unknown Researcher';
-          const sub  = p ? [p.position, p.institution].filter(Boolean).join(' · ') : '';
-          return `
-            <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;${i < reqs.length - 1 ? 'border-bottom:1px solid var(--border)' : ''}">
-              <div class="avatar" style="background:${avatarColor(p?.firstName||'')};flex-shrink:0">${initials(p?.firstName||'?', p?.lastName||'')}</div>
+        ${reqs
+          .map((r, i) => {
+            const p = names[i];
+            const name = p
+              ? `${p.firstName} ${p.lastName}`
+              : "Unknown Researcher";
+            const sub = p
+              ? [p.position, p.institution].filter(Boolean).join(" · ")
+              : "";
+            return `
+            <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;${i < reqs.length - 1 ? "border-bottom:1px solid var(--border)" : ""}">
+              <div class="avatar" style="background:${avatarColor(p?.firstName || "")};flex-shrink:0">${initials(p?.firstName || "?", p?.lastName || "")}</div>
               <div style="flex:1;min-width:0">
                 <div style="font-weight:600;font-size:14px;cursor:pointer" onclick="navigate('researcher-profile','${r.fromUserId}')">${name}</div>
-                ${sub ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${sub}</div>` : ''}
+                ${sub ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${sub}</div>` : ""}
               </div>
               <div style="display:flex;gap:8px;flex-shrink:0">
                 <button class="btn btn-green btn-sm" onclick="acceptConnection('${r.id}','${r.fromUserId}')">Accept</button>
                 <button class="btn btn-ghost btn-sm" onclick="rejectConnection('${r.id}')">Decline</button>
               </div>
             </div>`;
-        }).join('')}
+          })
+          .join("")}
       </div>
     `;
-  } catch(e) { console.error(e); }
-}
+        } catch (e) {
+          console.error(e);
+        }
+      }
 
-// ─── RESEARCHERS ──────────────────────────────────────────────────────────────
-function debounceLoadResearchers() {
-  clearTimeout(rDebounce);
-  rDebounce = setTimeout(loadResearchers, 400);
-}
+      // ─── RESEARCHERS ──────────────────────────────────────────────────────────────
+      function debounceLoadResearchers() {
+        clearTimeout(rDebounce);
+        rDebounce = setTimeout(loadResearchers, 400);
+      }
 
-async function loadResearchers() {
-  const list = document.getElementById('researcherList');
-  list.innerHTML = '<div class="spinner"></div>';
-  const params = new URLSearchParams({ limit: 30 });
-  const s = v('rSearch'); if (s) params.set('search', s);
-  const f = v('rField'); if (f) params.set('field', f);
-  const i = v('rInstitution'); if (i) params.set('institution', i);
-  const p = v('rPosition'); if (p) params.set('position', p);
+      async function loadResearchers() {
+        const list = document.getElementById("researcherList");
+        list.innerHTML = '<div class="spinner"></div>';
+        const params = new URLSearchParams({ limit: 30 });
+        const s = v("rSearch");
+        if (s) params.set("search", s);
+        const f = v("rField");
+        if (f) params.set("field", f);
+        const i = v("rInstitution");
+        if (i) params.set("institution", i);
+        const p = v("rPosition");
+        if (p) params.set("position", p);
 
-  renderActiveFilters({ search: s, field: f, institution: i, position: p });
+        renderActiveFilters({
+          search: s,
+          field: f,
+          institution: i,
+          position: p,
+        });
 
-  try {
-    if (token) {
-      const [conns, pend] = await Promise.all([
-        api('/connections').catch(() => ({ connections: [] })),
-        api('/connections/pending').catch(() => ({ pending: [] }))
-      ]);
-      myConnections = new Set(conns.connections || []);
-      pendingFrom   = new Map((pend.pending || []).map(p => [p.fromUserId, p.id]));
-      pendingCount  = pend.pending?.length || 0;
-      _notifAt      = Date.now();
-      renderNav();
-    }
-    const d = await api('/researchers?' + params);
-    document.getElementById('researcherCount').textContent = d.total + ' researcher' + (d.total !== 1 ? 's' : '');
-    if (!d.researchers.length) {
-      list.innerHTML = `<div class="empty"><div class="empty-icon">🔬</div><h3>No researchers found</h3><p>Try adjusting your search filters</p></div>`;
-      return;
-    }
-    list.innerHTML = d.researchers.map(r => `
+        try {
+          if (token) {
+            const [conns, pend] = await Promise.all([
+              api("/connections").catch(() => ({ connections: [] })),
+              api("/connections/pending").catch(() => ({ pending: [] })),
+            ]);
+            myConnections = new Set(conns.connections || []);
+            pendingFrom = new Map(
+              (pend.pending || []).map((p) => [p.fromUserId, p.id]),
+            );
+            pendingCount = pend.pending?.length || 0;
+            _notifAt = Date.now();
+            renderNav();
+          }
+          const d = await api("/researchers?" + params);
+          document.getElementById("researcherCount").textContent =
+            d.total + " researcher" + (d.total !== 1 ? "s" : "");
+          if (!d.researchers.length) {
+            list.innerHTML = `<div class="empty"><div class="empty-icon">🔬</div><h3>No researchers found</h3><p>Try adjusting your search filters</p></div>`;
+            return;
+          }
+          list.innerHTML = d.researchers
+            .map(
+              (r) => `
       <div class="card" style="margin-bottom:16px">
         <div class="researcher-card">
           <div class="avatar" style="background:${avatarColor(r.firstName)};flex-shrink:0">${initials(r.firstName, r.lastName)}</div>
           <div class="info" style="flex:1">
             <h3 onclick="navigate('researcher-profile','${r.id}')">${r.firstName} ${r.lastName}</h3>
-            <div class="meta">${r.position || '—'} ${r.institution ? '· ' + r.institution : ''}</div>
-            <div class="tags">${(r.researchFields||[]).slice(0,4).map(f=>`<span class="tag tag-blue">${f}</span>`).join('')}</div>
+            <div class="meta">${r.position || "—"} ${r.institution ? "· " + r.institution : ""}</div>
+            <div class="tags">${(r.researchFields || [])
+              .slice(0, 4)
+              .map((f) => `<span class="tag tag-blue">${f}</span>`)
+              .join("")}</div>
             <div class="stats">
-              <span>H-Index: <strong>${r.hIndex||0}</strong></span>
-              <span>Publications: <strong>${r.totalPublications||0}</strong></span>
-              <span>Profile: <strong>${r.profileCompleteness||0}%</strong></span>
+              <span>H-Index: <strong>${r.hIndex || 0}</strong></span>
+              <span>Publications: <strong>${r.totalPublications || 0}</strong></span>
+              <span>Profile: <strong>${r.profileCompleteness || 0}%</strong></span>
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px">
             <button class="btn btn-ghost btn-sm" onclick="navigate('researcher-profile','${r.id}')">View</button>
-            ${token && currentUser?.id !== r.id ? `<button class="btn btn-ghost btn-sm" onclick="openMsgModal('${r.id}','${r.firstName} ${r.lastName}')">Message</button>` : ''}
-            ${token && currentUser?.id !== r.id ? connectionBtn(r.id) : ''}
+            ${token && currentUser?.id !== r.id ? `<button class="btn btn-ghost btn-sm" onclick="openMsgModal('${r.id}','${r.firstName} ${r.lastName}')">Message</button>` : ""}
+            ${token && currentUser?.id !== r.id ? connectionBtn(r.id) : ""}
           </div>
         </div>
       </div>
-    `).join('');
-  } catch(e) { list.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-}
+    `,
+            )
+            .join("");
+        } catch (e) {
+          list.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        }
+      }
 
-function renderActiveFilters(filters) {
-  const wrap = document.getElementById('activeFilters');
-  if (!wrap) return;
-  const labels = { search: 'Search', field: 'Field', institution: 'Institution', position: 'Position' };
-  const clearMap = { search: 'rSearch', field: 'rField', institution: 'rInstitution', position: 'rPosition' };
-  const chips = Object.entries(filters)
-    .filter(([, val]) => val)
-    .map(([key, val]) => `
+      function renderActiveFilters(filters) {
+        const wrap = document.getElementById("activeFilters");
+        if (!wrap) return;
+        const labels = {
+          search: "Search",
+          field: "Field",
+          institution: "Institution",
+          position: "Position",
+        };
+        const clearMap = {
+          search: "rSearch",
+          field: "rField",
+          institution: "rInstitution",
+          position: "rPosition",
+        };
+        const chips = Object.entries(filters)
+          .filter(([, val]) => val)
+          .map(
+            ([key, val]) => `
       <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 12px;background:rgba(79,142,247,0.12);border:1px solid rgba(79,142,247,0.3);border-radius:20px;font-size:12px;color:var(--accent)">
         <span style="color:var(--muted)">${labels[key]}:</span> ${val}
         <button onclick="clearFilter('${clearMap[key]}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0 2px">×</button>
       </span>
-    `).join('');
-  wrap.innerHTML = chips;
-}
+    `,
+          )
+          .join("");
+        wrap.innerHTML = chips;
+      }
 
-function clearFilter(inputId) {
-  const el = document.getElementById(inputId);
-  if (!el) return;
-  if (el.tagName === 'SELECT') el.value = '';
-  else el.value = '';
-  loadResearchers();
-}
+      function clearFilter(inputId) {
+        const el = document.getElementById(inputId);
+        if (!el) return;
+        if (el.tagName === "SELECT") el.value = "";
+        else el.value = "";
+        loadResearchers();
+      }
 
-async function loadResearcherProfile(id) {
-  const el = document.getElementById('researcherProfileContent');
-  el.innerHTML = '<div class="spinner"></div>';
-  try {
-    const [r, pubs, projs, conns, pend] = await Promise.all([
-      api('/researchers/' + id),
-      api('/publications/' + id),
-      api('/projects?userId=' + id + '&limit=50'),
-      token ? api('/connections').catch(() => ({ connections: [] })) : Promise.resolve({ connections: [] }),
-      token ? api('/connections/pending').catch(() => ({ pending: [] })) : Promise.resolve({ pending: [] })
-    ]);
-    if (token) {
-      myConnections = new Set(conns.connections || []);
-      pendingFrom   = new Map((pend.pending || []).map(p => [p.fromUserId, p.id]));
-      pendingCount  = pend.pending?.length || 0;
-      _notifAt      = Date.now();
-      renderNav();
-    }
-    const isOwnProfile = currentUser?.id?.toString() === id?.toString();
-    el.innerHTML = `
+      async function loadResearcherProfile(id) {
+        const el = document.getElementById("researcherProfileContent");
+        el.innerHTML = '<div class="spinner"></div>';
+        try {
+          const [r, pubs, projs, conns, pend] = await Promise.all([
+            api("/researchers/" + id),
+            api("/publications/" + id),
+            api("/projects?userId=" + id + "&limit=50"),
+            token
+              ? api("/connections").catch(() => ({ connections: [] }))
+              : Promise.resolve({ connections: [] }),
+            token
+              ? api("/connections/pending").catch(() => ({ pending: [] }))
+              : Promise.resolve({ pending: [] }),
+          ]);
+          if (token) {
+            myConnections = new Set(conns.connections || []);
+            pendingFrom = new Map(
+              (pend.pending || []).map((p) => [p.fromUserId, p.id]),
+            );
+            pendingCount = pend.pending?.length || 0;
+            _notifAt = Date.now();
+            renderNav();
+          }
+          const isOwnProfile = currentUser?.id?.toString() === id?.toString();
+          el.innerHTML = `
       <button class="btn btn-ghost btn-sm" onclick="history.back()" style="margin-bottom:20px">← Back</button>
       <div class="card" style="margin-bottom:24px">
         <div class="profile-header">
           <div class="avatar avatar-lg" style="background:${avatarColor(r.firstName)}">${initials(r.firstName, r.lastName)}</div>
           <div class="info">
             <h1>${r.firstName} ${r.lastName}</h1>
-            <div class="role">${r.position||'Researcher'} ${r.institution ? '· ' + r.institution : ''}</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">${(r.researchFields||[]).map(f=>`<span class="tag tag-blue">${f}</span>`).join('')}</div>
+            <div class="role">${r.position || "Researcher"} ${r.institution ? "· " + r.institution : ""}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">${(r.researchFields || []).map((f) => `<span class="tag tag-blue">${f}</span>`).join("")}</div>
             <div style="display:flex;gap:20px;font-size:13px;color:var(--muted)">
-              <span>H-Index: <strong style="color:var(--text)">${r.hIndex||0}</strong></span>
-              <span>Publications: <strong style="color:var(--text)">${r.totalPublications||0}</strong></span>
-              <span>Projects: <strong style="color:var(--text)">${projs.total||0}</strong></span>
+              <span>H-Index: <strong style="color:var(--text)">${r.hIndex || 0}</strong></span>
+              <span>Publications: <strong style="color:var(--text)">${r.totalPublications || 0}</strong></span>
+              <span>Projects: <strong style="color:var(--text)">${projs.total || 0}</strong></span>
             </div>
           </div>
-          ${token && !isOwnProfile ? `
+          ${
+            token && !isOwnProfile
+              ? `
             <div style="margin-left:auto;display:flex;gap:8px">
               <button class="btn btn-primary btn-sm" onclick="openMsgModal('${id}','${r.firstName} ${r.lastName}')">Message</button>
               ${connectionBtn(id)}
             </div>
-          ` : ''}
+          `
+              : ""
+          }
         </div>
-        ${r.bio ? `<p style="color:var(--muted);line-height:1.7">${r.bio}</p>` : ''}
+        ${r.bio ? `<p style="color:var(--muted);line-height:1.7">${r.bio}</p>` : ""}
       </div>
 
-      ${projs.projects?.length ? `
+      ${
+        projs.projects?.length
+          ? `
         <div class="card" style="margin-bottom:24px">
           <h3 style="font-family:var(--font-head);font-weight:700;margin-bottom:20px">Research Projects (${projs.total})</h3>
-          ${projs.projects.map(p => {
-            const sm = STATUS_META[p.status] || { label: p.status, cls: 'tag-blue' };
-            const canCollab = token && !isOwnProfile;
-            return `
+          ${projs.projects
+            .map((p) => {
+              const sm = STATUS_META[p.status] || {
+                label: p.status,
+                cls: "tag-blue",
+              };
+              const canCollab = token && !isOwnProfile;
+              return `
               <div style="padding:16px 0;border-bottom:1px solid var(--border)">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
                   <div style="flex:1;min-width:0">
                     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
                       <span style="font-family:var(--font-head);font-weight:700;font-size:15px">${p.title}</span>
                       <span class="tag ${sm.cls}">${sm.label}</span>
-                      ${p.field ? `<span class="tag tag-blue">${p.field}</span>` : ''}
+                      ${p.field ? `<span class="tag tag-blue">${p.field}</span>` : ""}
                     </div>
-                    <p style="font-size:14px;color:var(--muted);line-height:1.6;margin:0">${p.description.length > 220 ? p.description.slice(0,220)+'…' : p.description}</p>
+                    <p style="font-size:14px;color:var(--muted);line-height:1.6;margin:0">${p.description.length > 220 ? p.description.slice(0, 220) + "…" : p.description}</p>
                   </div>
-                  ${canCollab ? `<button class="btn btn-green btn-sm" style="flex-shrink:0" onclick="requestCollaborate('${p.id}','${p.title.replace(/'/g,"\\'")}')">🤝 Request to Collaborate</button>` : ''}
+                  ${canCollab ? `<button class="btn btn-green btn-sm" style="flex-shrink:0" onclick="requestCollaborate('${p.id}','${p.title.replace(/'/g, "\\'")}')">🤝 Request to Collaborate</button>` : ""}
                 </div>
               </div>`;
-          }).join('')}
+            })
+            .join("")}
         </div>
-      ` : ''}
+      `
+          : ""
+      }
 
-      ${pubs.publications?.length ? `
+      ${
+        pubs.publications?.length
+          ? `
         <div class="card">
           <h3 style="font-family:var(--font-head);font-weight:700;margin-bottom:16px">Publications (${pubs.total})</h3>
-          ${pubs.publications.map(p => `
+          ${pubs.publications
+            .map(
+              (p) => `
             <div style="padding:14px 0;border-bottom:1px solid var(--border)">
               <div style="font-weight:500;margin-bottom:4px">${p.title}</div>
-              <div style="font-size:13px;color:var(--muted)">${(p.authors||[]).join(', ')} · ${p.journal||''} · ${p.publicationDate ? new Date(p.publicationDate).getFullYear() : ''}</div>
-              ${p.doi ? `<a href="https://doi.org/${p.doi}" target="_blank" style="font-size:12px;color:var(--accent)">DOI: ${p.doi}</a>` : ''}
+              <div style="font-size:13px;color:var(--muted)">${(p.authors || []).join(", ")} · ${p.journal || ""} · ${p.publicationDate ? new Date(p.publicationDate).getFullYear() : ""}</div>
+              ${p.doi ? `<a href="https://doi.org/${p.doi}" target="_blank" style="font-size:12px;color:var(--accent)">DOI: ${p.doi}</a>` : ""}
             </div>
-          `).join('')}
+          `,
+            )
+            .join("")}
         </div>
-      ` : ''}
+      `
+          : ""
+      }
     `;
-  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-}
+        } catch (e) {
+          el.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        }
+      }
 
-function connectionBtn(userId) {
-  const id = String(userId);
-  if (myConnections.has(id))
-    return `<button class="btn btn-ghost btn-sm" disabled style="opacity:0.55;cursor:default">✓ Connected</button>`;
-  if (pendingFrom.has(id))
-    return `<button class="btn btn-green btn-sm" onclick="navigate('dashboard')" title="They sent you a request — go to dashboard to accept">Accept →</button>`;
-  if (sentRequests.has(id))
-    return `<button class="btn btn-ghost btn-sm" disabled style="opacity:0.55;cursor:default">Pending…</button>`;
-  return `<button class="btn btn-ghost btn-sm" id="connbtn-${id}" onclick="connectUser('${id}')">Connect</button>`;
-}
+      function connectionBtn(userId) {
+        const id = String(userId);
+        if (myConnections.has(id))
+          return `<button class="btn btn-ghost btn-sm" disabled style="opacity:0.55;cursor:default">✓ Connected</button>`;
+        if (pendingFrom.has(id))
+          return `<button class="btn btn-green btn-sm" onclick="navigate('dashboard')" title="They sent you a request — go to dashboard to accept">Accept →</button>`;
+        if (sentRequests.has(id))
+          return `<button class="btn btn-ghost btn-sm" disabled style="opacity:0.55;cursor:default">Pending…</button>`;
+        return `<button class="btn btn-ghost btn-sm" id="connbtn-${id}" onclick="connectUser('${id}')">Connect</button>`;
+      }
 
-async function connectUser(id) {
-  if (!token) { navigate('login'); return; }
-  const btn = document.getElementById('connbtn-' + id);
-  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
-  try {
-    await api('/connections/' + id + '/request', { method: 'POST' });
-    sentRequests.add(String(id));
-    if (btn) { btn.textContent = 'Pending…'; btn.style.opacity = '0.55'; }
-  } catch(e) {
-    if (btn) { btn.disabled = false; btn.textContent = 'Connect'; }
-    alert(e.message);
-  }
-}
+      async function connectUser(id) {
+        if (!token) {
+          navigate("login");
+          return;
+        }
+        const btn = document.getElementById("connbtn-" + id);
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "Sending…";
+        }
+        try {
+          await api("/connections/" + id + "/request", { method: "POST" });
+          sentRequests.add(String(id));
+          if (btn) {
+            btn.textContent = "Pending…";
+            btn.style.opacity = "0.55";
+          }
+        } catch (e) {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = "Connect";
+          }
+          alert(e.message);
+        }
+      }
 
-async function acceptConnection(connId, userId) {
-  try {
-    await api('/connections/' + connId, { method: 'PUT', body: JSON.stringify({ status: 'accepted' }) });
-    myConnections.add(String(userId));
-    pendingFrom.delete(String(userId));
-    loadDashboard();
-  } catch(e) { alert(e.message); }
-}
+      async function acceptConnection(connId, userId) {
+        try {
+          await api("/connections/" + connId, {
+            method: "PUT",
+            body: JSON.stringify({ status: "accepted" }),
+          });
+          myConnections.add(String(userId));
+          pendingFrom.delete(String(userId));
+          loadDashboard();
+        } catch (e) {
+          alert(e.message);
+        }
+      }
 
-async function rejectConnection(connId) {
-  try {
-    await api('/connections/' + connId, { method: 'PUT', body: JSON.stringify({ status: 'rejected' }) });
-    loadDashboard();
-  } catch(e) { alert(e.message); }
-}
+      async function rejectConnection(connId) {
+        try {
+          await api("/connections/" + connId, {
+            method: "PUT",
+            body: JSON.stringify({ status: "rejected" }),
+          });
+          loadDashboard();
+        } catch (e) {
+          alert(e.message);
+        }
+      }
 
-// ─── JOBS ─────────────────────────────────────────────────────────────────────
-function debounceLoadJobs() { clearTimeout(jDebounce); jDebounce = setTimeout(loadJobs, 400); }
+      // ─── JOBS ─────────────────────────────────────────────────────────────────────
+      function debounceLoadJobs() {
+        clearTimeout(jDebounce);
+        jDebounce = setTimeout(loadJobs, 400);
+      }
 
-async function loadJobs() {
-  const list = document.getElementById('jobList');
-  list.innerHTML = '<div class="spinner"></div>';
-  const params = new URLSearchParams({ limit: 30 });
-  const t = v('jType'); if (t) params.set('jobType', t);
-  const f = v('jField'); if (f) params.set('field', f);
-  try {
-    const d = await api('/jobs?' + params);
-    if (!d.jobs.length) {
-      list.innerHTML = `<div class="empty"><div class="empty-icon">💼</div><h3>No jobs found</h3><p>Try different filters or <a href="#" onclick="openJobModal()" style="color:var(--accent)">post one</a></p></div>`;
-      return;
-    }
-    list.innerHTML = d.jobs.map(j => `
+      async function loadJobs() {
+        const list = document.getElementById("jobList");
+        list.innerHTML = '<div class="spinner"></div>';
+        const params = new URLSearchParams({ limit: 30 });
+        const t = v("jType");
+        if (t) params.set("jobType", t);
+        const f = v("jField");
+        if (f) params.set("field", f);
+        try {
+          const d = await api("/jobs?" + params);
+          if (!d.jobs.length) {
+            list.innerHTML = `<div class="empty"><div class="empty-icon">💼</div><h3>No jobs found</h3><p>Try different filters or <a href="#" onclick="openJobModal()" style="color:var(--accent)">post one</a></p></div>`;
+            return;
+          }
+          list.innerHTML = d.jobs
+            .map(
+              (j) => `
       <div class="card job-card" style="margin-bottom:16px">
         <h3 onclick="navigate('job-detail','${j.id}')">${j.title}</h3>
-        <div class="org">${j.organization} · <span style="color:var(--muted)">${j.location||'Remote'}</span></div>
+        <div class="org">${j.organization} · <span style="color:var(--muted)">${j.location || "Remote"}</span></div>
         <div class="desc">${j.description}</div>
         <div class="job-footer">
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <span class="tag tag-yellow">${j.jobType}</span>
-            ${j.salaryMin ? `<span style="font-size:13px;color:var(--green)">$${j.salaryMin.toLocaleString()}${j.salaryMax ? ' – $'+j.salaryMax.toLocaleString() : ''}</span>` : ''}
-            ${(j.requiredFields||[]).slice(0,2).map(f=>`<span class="tag tag-blue">${f}</span>`).join('')}
+            ${j.salaryMin ? `<span style="font-size:13px;color:var(--green)">$${j.salaryMin.toLocaleString()}${j.salaryMax ? " – $" + j.salaryMax.toLocaleString() : ""}</span>` : ""}
+            ${(j.requiredFields || [])
+              .slice(0, 2)
+              .map((f) => `<span class="tag tag-blue">${f}</span>`)
+              .join("")}
           </div>
           <div style="display:flex;gap:8px">
             <button class="btn btn-ghost btn-sm" onclick="navigate('job-detail','${j.id}')">Details</button>
-            ${token ? `<button class="btn btn-green btn-sm" onclick="openApplyModal('${j.id}','${j.title.replace(/'/g,"\\'")}')">Apply</button>` : `<button class="btn btn-primary btn-sm" onclick="navigate('login')">Apply</button>`}
+            ${token ? `<button class="btn btn-green btn-sm" onclick="openApplyModal('${j.id}','${j.title.replace(/'/g, "\\'")}')">Apply</button>` : `<button class="btn btn-primary btn-sm" onclick="navigate('login')">Apply</button>`}
           </div>
         </div>
       </div>
-    `).join('');
-  } catch(e) { list.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-}
+    `,
+            )
+            .join("");
+        } catch (e) {
+          list.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        }
+      }
 
-async function loadJobDetail(id) {
-  const el = document.getElementById('jobDetailContent');
-  el.innerHTML = '<div class="spinner"></div>';
-  try {
-    const j = await api('/jobs/' + id);
-    const isPoster = token && currentUser?.id === j.posted_by_user_id;
-    el.innerHTML = `
+      async function loadJobDetail(id) {
+        const el = document.getElementById("jobDetailContent");
+        el.innerHTML = '<div class="spinner"></div>';
+        try {
+          const j = await api("/jobs/" + id);
+          const isPoster = token && currentUser?.id === j.posted_by_user_id;
+          el.innerHTML = `
       <button class="btn btn-ghost btn-sm" onclick="navigate('jobs')" style="margin-bottom:20px">← Back to Jobs</button>
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:12px">
           <div>
             <h1 style="font-family:var(--font-head);font-size:26px;font-weight:800;margin-bottom:8px">${j.title}</h1>
-            <div style="color:var(--muted)">${j.organization_name} · ${j.location||'Remote'}</div>
+            <div style="color:var(--muted)">${j.organization_name} · ${j.location || "Remote"}</div>
           </div>
-          ${isPoster
-            ? `<span class="tag tag-blue" style="font-size:13px;padding:8px 14px">📋 Your Listing · ${j.applicantCount || 0} applicant${j.applicantCount !== 1 ? 's' : ''}</span>`
-            : (token ? `<button class="btn btn-green" onclick="openApplyModal('${j.id}','${j.title.replace(/'/g,"\\'")}')">Apply Now</button>` : `<button class="btn btn-primary" onclick="navigate('login')">Sign in to Apply</button>`)
+          ${
+            isPoster
+              ? `<span class="tag tag-blue" style="font-size:13px;padding:8px 14px">📋 Your Listing · ${j.applicantCount || 0} applicant${j.applicantCount !== 1 ? "s" : ""}</span>`
+              : token
+                ? `<button class="btn btn-green" onclick="openApplyModal('${j.id}','${j.title.replace(/'/g, "\\'")}')">Apply Now</button>`
+                : `<button class="btn btn-primary" onclick="navigate('login')">Sign in to Apply</button>`
           }
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
           <span class="tag tag-yellow">${j.job_type}</span>
-          ${j.salary_min ? `<span class="tag tag-green">$${j.salary_min.toLocaleString()}${j.salary_max?' – $'+j.salary_max.toLocaleString():''}</span>` : ''}
-          ${j.is_remote ? '<span class="tag tag-purple">Remote</span>' : ''}
-          ${!isPoster ? `<span style="color:var(--muted);font-size:13px">${j.applicantCount || 0} applicants</span>` : ''}
+          ${j.salary_min ? `<span class="tag tag-green">$${j.salary_min.toLocaleString()}${j.salary_max ? " – $" + j.salary_max.toLocaleString() : ""}</span>` : ""}
+          ${j.is_remote ? '<span class="tag tag-purple">Remote</span>' : ""}
+          ${!isPoster ? `<span style="color:var(--muted);font-size:13px">${j.applicantCount || 0} applicants</span>` : ""}
         </div>
         <div style="white-space:pre-wrap;line-height:1.8;color:var(--muted);margin-bottom:20px">${j.description}</div>
-        ${(j.required_fields||[]).length ? `
+        ${
+          (j.required_fields || []).length
+            ? `
           <div style="margin-bottom:16px">
             <div style="font-weight:600;margin-bottom:8px;font-size:14px">Required Fields</div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px">${j.required_fields.map(f=>`<span class="tag tag-blue">${f}</span>`).join('')}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">${j.required_fields.map((f) => `<span class="tag tag-blue">${f}</span>`).join("")}</div>
           </div>
-        ` : ''}
-        ${j.application_email ? `<p style="font-size:14px;color:var(--muted)">📧 Applications sent to: <a href="mailto:${j.application_email}" style="color:var(--accent)">${j.application_email}</a></p>` : ''}
+        `
+            : ""
+        }
+        ${j.application_email ? `<p style="font-size:14px;color:var(--muted)">📧 Applications sent to: <a href="mailto:${j.application_email}" style="color:var(--accent)">${j.application_email}</a></p>` : ""}
         <div style="margin-top:16px;font-size:13px;color:var(--muted)">Posted ${timeAgo(j.created_at)}</div>
       </div>
-      ${isPoster ? '<div id="jobApplicationsSection" style="margin-top:28px"></div>' : ''}
+      ${isPoster ? '<div id="jobApplicationsSection" style="margin-top:28px"></div>' : ""}
     `;
-    if (isPoster) loadJobApplications(id);
-  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-}
+          if (isPoster) loadJobApplications(id);
+        } catch (e) {
+          el.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        }
+      }
 
-async function loadJobApplications(jobId) {
-  const el = document.getElementById('jobApplicationsSection');
-  if (!el) return;
-  el.innerHTML = '<div class="spinner"></div>';
-  try {
-    const d = await api('/jobs/' + jobId + '/applications');
-    const statusLabel = { pending: 'Submitted', under_review: 'Under Review', accepted: 'Accepted', rejected: 'Rejected' };
-    const statusColor = { pending: 'var(--muted)', under_review: 'var(--accent)', accepted: '#2dd4a0', rejected: '#f05a5a' };
-    if (!d.applications.length) {
-      el.innerHTML = `
+      async function loadJobApplications(jobId) {
+        const el = document.getElementById("jobApplicationsSection");
+        if (!el) return;
+        el.innerHTML = '<div class="spinner"></div>';
+        try {
+          const d = await api("/jobs/" + jobId + "/applications");
+          const statusLabel = {
+            pending: "Submitted",
+            under_review: "Under Review",
+            accepted: "Accepted",
+            rejected: "Rejected",
+          };
+          const statusColor = {
+            pending: "var(--muted)",
+            under_review: "var(--accent)",
+            accepted: "#2dd4a0",
+            rejected: "#f05a5a",
+          };
+          if (!d.applications.length) {
+            el.innerHTML = `
         <h2 style="font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:16px">Applications</h2>
         <div class="card" style="text-align:center;padding:48px 24px;color:var(--muted)">
           <div style="font-size:36px;margin-bottom:12px">📭</div>
           <div style="font-weight:600;font-size:15px;margin-bottom:6px">No applications yet</div>
           <div style="font-size:14px">Candidates who apply will appear here</div>
         </div>`;
-      return;
-    }
-    el.innerHTML = `
+            return;
+          }
+          el.innerHTML = `
       <h2 style="font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:16px">
         Applications <span style="font-size:14px;color:var(--muted);font-weight:400;margin-left:6px">${d.applications.length} received</span>
       </h2>
-      ${d.applications.map(a => `
+      ${d.applications
+        .map(
+          (a) => `
         <div class="card" style="margin-bottom:14px">
           <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
-            <div class="avatar" style="background:${avatarColor(a.name)};flex-shrink:0">${a.name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase()}</div>
+            <div class="avatar" style="background:${avatarColor(a.name)};flex-shrink:0">${a.name
+              .split(" ")
+              .map((w) => w[0] || "")
+              .join("")
+              .slice(0, 2)
+              .toUpperCase()}</div>
             <div style="flex:1;min-width:0">
               <div style="font-weight:600;font-size:15px;margin-bottom:2px">${a.name}</div>
-              <div style="color:var(--muted);font-size:13px;margin-bottom:8px">${[a.position,a.institution].filter(Boolean).join(' · ') || 'No profile details'}</div>
-              ${a.message ? `<blockquote style="margin:0 0 10px;font-size:13px;color:var(--muted);background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 14px;line-height:1.6">${a.message}</blockquote>` : ''}
+              <div style="color:var(--muted);font-size:13px;margin-bottom:8px">${[a.position, a.institution].filter(Boolean).join(" · ") || "No profile details"}</div>
+              ${a.message ? `<blockquote style="margin:0 0 10px;font-size:13px;color:var(--muted);background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 14px;line-height:1.6">${a.message}</blockquote>` : ""}
               <div style="font-size:12px;color:var(--muted)">Applied ${timeAgo(a.applied_at)}</div>
             </div>
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
-              <span style="font-size:12px;font-weight:700;color:${statusColor[a.status]||'var(--muted)'}">${statusLabel[a.status]||a.status}</span>
+              <span style="font-size:12px;font-weight:700;color:${statusColor[a.status] || "var(--muted)"}">${statusLabel[a.status] || a.status}</span>
               <select class="status-select" onchange="updateApplicationStatus('${a.id}','${jobId}',this.value)">
-                <option value="pending"      ${a.status==='pending'      ?'selected':''}>Submitted</option>
-                <option value="under_review" ${a.status==='under_review' ?'selected':''}>Under Review</option>
-                <option value="accepted"     ${a.status==='accepted'     ?'selected':''}>Accepted</option>
-                <option value="rejected"     ${a.status==='rejected'     ?'selected':''}>Rejected</option>
+                <option value="pending"      ${a.status === "pending" ? "selected" : ""}>Submitted</option>
+                <option value="under_review" ${a.status === "under_review" ? "selected" : ""}>Under Review</option>
+                <option value="accepted"     ${a.status === "accepted" ? "selected" : ""}>Accepted</option>
+                <option value="rejected"     ${a.status === "rejected" ? "selected" : ""}>Rejected</option>
               </select>
             </div>
           </div>
         </div>
-      `).join('')}`;
-  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-}
+      `,
+        )
+        .join("")}`;
+        } catch (e) {
+          el.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        }
+      }
 
-async function updateApplicationStatus(appId, jobId, status) {
-  try {
-    await api('/jobs/applications/' + appId + '/status', {
-      method: 'PATCH',
-      body: JSON.stringify({ status })
-    });
-    loadJobApplications(jobId);
-  } catch(e) { alert(e.message); }
-}
+      async function updateApplicationStatus(appId, jobId, status) {
+        try {
+          await api("/jobs/applications/" + appId + "/status", {
+            method: "PATCH",
+            body: JSON.stringify({ status }),
+          });
+          loadJobApplications(jobId);
+        } catch (e) {
+          alert(e.message);
+        }
+      }
 
-function openJobModal() {
-  if (!token) { navigate('login'); return; }
-  document.getElementById('jobModal').classList.add('open');
-}
+      function openJobModal() {
+        if (!token) {
+          navigate("login");
+          return;
+        }
+        document.getElementById("jobModal").classList.add("open");
+      }
 
-async function submitJob() {
-  const err = document.getElementById('jobModalError');
-  err.style.display = 'none';
-  try {
-    await api('/jobs', {
-      method: 'POST',
-      body: JSON.stringify({
-        title: v('jTitle'), organization: v('jOrg'), jobType: v('jTypeNew'),
-        location: v('jLoc'), salaryMin: +v('jSalMin') || undefined, salaryMax: +v('jSalMax') || undefined,
-        requiredFields: v('jReqFields').split(',').map(s=>s.trim()).filter(Boolean),
-        description: v('jDesc'), applicationEmail: v('jAppEmail')
-      })
-    });
-    closeModal('jobModal');
-    navigate('jobs');
-  } catch(e) { err.textContent = e.message; err.style.display = ''; }
-}
+      async function submitJob() {
+        const err = document.getElementById("jobModalError");
+        err.style.display = "none";
+        try {
+          await api("/jobs", {
+            method: "POST",
+            body: JSON.stringify({
+              title: v("jTitle"),
+              organization: v("jOrg"),
+              jobType: v("jTypeNew"),
+              location: v("jLoc"),
+              salaryMin: +v("jSalMin") || undefined,
+              salaryMax: +v("jSalMax") || undefined,
+              requiredFields: v("jReqFields")
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean),
+              description: v("jDesc"),
+              applicationEmail: v("jAppEmail"),
+            }),
+          });
+          closeModal("jobModal");
+          navigate("jobs");
+        } catch (e) {
+          err.textContent = e.message;
+          err.style.display = "";
+        }
+      }
 
-function openApplyModal(id, title) {
-  if (!token) { navigate('login'); return; }
-  applyingToJobId = id;
-  document.getElementById('applyJobTitle').textContent = title;
-  document.getElementById('applyModal').classList.add('open');
-}
+      function openApplyModal(id, title) {
+        if (!token) {
+          navigate("login");
+          return;
+        }
+        applyingToJobId = id;
+        document.getElementById("applyJobTitle").textContent = title;
+        document.getElementById("applyModal").classList.add("open");
+      }
 
-async function submitApplication() {
-  try {
-    await api('/jobs/' + applyingToJobId + '/apply', {
-      method: 'POST',
-      body: JSON.stringify({ message: v('applyMessage') })
-    });
-    closeModal('applyModal');
-    alert('✅ Application submitted!');
-  } catch(e) { alert(e.message); }
-}
+      async function submitApplication() {
+        try {
+          await api("/jobs/" + applyingToJobId + "/apply", {
+            method: "POST",
+            body: JSON.stringify({ message: v("applyMessage") }),
+          });
+          closeModal("applyModal");
+          alert("✅ Application submitted!");
+        } catch (e) {
+          alert(e.message);
+        }
+      }
 
-// ─── MY APPLICATIONS ──────────────────────────────────────────────────────────
-async function loadMyApplications() {
-  if (!token) { navigate('login'); return; }
-  const el = document.getElementById('myApplicationsContent');
-  el.innerHTML = '<div class="spinner"></div>';
-  try {
-    const d = await api('/jobs/applications/my');
-    if (!d.applications.length) {
-      el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><h3>No applications yet</h3><p>Find and apply to research jobs to track them here</p><button class="btn btn-primary" onclick="navigate('jobs')" style="margin-top:16px">Browse Jobs</button></div>`;
-      return;
-    }
-    const statusLabel = { pending: 'Submitted', under_review: 'Under Review', accepted: 'Accepted', rejected: 'Rejected' };
-    const statusColor = { pending: 'var(--muted)', under_review: 'var(--accent)', accepted: '#2dd4a0', rejected: '#f05a5a' };
-    el.innerHTML = `
-      <div style="margin-bottom:12px;color:var(--muted);font-size:14px">${d.applications.length} application${d.applications.length > 1 ? 's' : ''}</div>
+      // ─── MY APPLICATIONS ──────────────────────────────────────────────────────────
+      async function loadMyApplications() {
+        if (!token) {
+          navigate("login");
+          return;
+        }
+        const el = document.getElementById("myApplicationsContent");
+        el.innerHTML = '<div class="spinner"></div>';
+        try {
+          const d = await api("/jobs/applications/my");
+          if (!d.applications.length) {
+            el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><h3>No applications yet</h3><p>Find and apply to research jobs to track them here</p><button class="btn btn-primary" onclick="navigate('jobs')" style="margin-top:16px">Browse Jobs</button></div>`;
+            return;
+          }
+          const statusLabel = {
+            pending: "Submitted",
+            under_review: "Under Review",
+            accepted: "Accepted",
+            rejected: "Rejected",
+          };
+          const statusColor = {
+            pending: "var(--muted)",
+            under_review: "var(--accent)",
+            accepted: "#2dd4a0",
+            rejected: "#f05a5a",
+          };
+          el.innerHTML = `
+      <div style="margin-bottom:12px;color:var(--muted);font-size:14px">${d.applications.length} application${d.applications.length > 1 ? "s" : ""}</div>
       <div class="card" style="padding:0;overflow:hidden">
         <table style="width:100%;border-collapse:collapse">
           <thead>
@@ -1266,82 +2657,133 @@ async function loadMyApplications() {
             </tr>
           </thead>
           <tbody>
-            ${d.applications.map(a => `
+            ${d.applications
+              .map(
+                (a) => `
               <tr class="app-row" onclick="navigate('job-detail','${a.job_id}')" style="border-bottom:1px solid var(--border)">
                 <td style="padding:14px 20px;font-size:14px;font-weight:500">${a.job_title}</td>
-                <td style="padding:14px 20px;font-size:14px;color:var(--muted)">${a.organization || '—'}</td>
-                <td style="padding:14px 20px;font-size:14px;color:var(--muted)">${new Date(a.applied_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
-                <td style="padding:14px 20px"><span style="font-size:12px;font-weight:700;color:${statusColor[a.status]||'var(--muted)'}">${statusLabel[a.status]||a.status}</span></td>
+                <td style="padding:14px 20px;font-size:14px;color:var(--muted)">${a.organization || "—"}</td>
+                <td style="padding:14px 20px;font-size:14px;color:var(--muted)">${new Date(a.applied_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</td>
+                <td style="padding:14px 20px"><span style="font-size:12px;font-weight:700;color:${statusColor[a.status] || "var(--muted)"}">${statusLabel[a.status] || a.status}</span></td>
               </tr>
-            `).join('')}
+            `,
+              )
+              .join("")}
           </tbody>
         </table>
       </div>`;
-  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-}
+        } catch (e) {
+          el.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        }
+      }
 
-// ─── PROFILE ──────────────────────────────────────────────────────────────────
-async function loadProfile() {
-  if (!token) { navigate('login'); return; }
-  try {
-    const d = await api('/auth/me');
-    const u = d.user;
-    document.getElementById('profileAvatar').textContent = initials(u.firstName, u.lastName);
-    document.getElementById('profileName').textContent = `${u.firstName} ${u.lastName}`;
-    document.getElementById('profileRole').textContent = `${u.position||''}${u.institution ? ' · '+u.institution : ''}` || 'Complete your profile';
-    const pct = u.profileCompleteness || 0;
-    document.getElementById('profilePct').textContent = pct + '%';
-    document.getElementById('profileBar').style.width = pct + '%';
-    sv('pFirst', u.firstName); sv('pLast', u.lastName);
-    sv('pInstitution', u.institution); sv('pPosition', u.position);
-    sv('pBio', u.bio); sv('pFields', (u.researchFields||[]).join(', '));
-    sv('pHIndex', u.hIndex || 0);
-    loadPubs(currentUser.id);
-    loadProfileProjects(currentUser.id);
-  } catch(e) { console.error(e); }
-}
+      // ─── PROFILE ──────────────────────────────────────────────────────────────────
+      async function loadProfile() {
+        if (!token) {
+          navigate("login");
+          return;
+        }
+        try {
+          const d = await api("/auth/me");
+          const u = d.user;
+          document.getElementById("profileAvatar").textContent = initials(
+            u.firstName,
+            u.lastName,
+          );
+          document.getElementById("profileName").textContent =
+            `${u.firstName} ${u.lastName}`;
+          document.getElementById("profileRole").textContent =
+            `${u.position || ""}${u.institution ? " · " + u.institution : ""}` ||
+            "Complete your profile";
+          const pct = u.profileCompleteness || 0;
+          document.getElementById("profilePct").textContent = pct + "%";
+          document.getElementById("profileBar").style.width = pct + "%";
+          sv("pFirst", u.firstName);
+          sv("pLast", u.lastName);
+          sv("pInstitution", u.institution);
+          sv("pPosition", u.position);
+          sv("pBio", u.bio);
+          sv("pFields", (u.researchFields || []).join(", "));
+          sv("pHIndex", u.hIndex || 0);
+          loadPubs(currentUser.id);
+          loadProfileProjects(currentUser.id);
+        } catch (e) {
+          console.error(e);
+        }
+      }
 
-async function loadPubs(uid) {
-  const el = document.getElementById('pubList');
-  try {
-    const d = await api('/publications/' + uid);
-    if (!d.publications.length) { el.innerHTML = '<p style="color:var(--muted);font-size:14px">No publications yet</p>'; return; }
-    el.innerHTML = d.publications.map(p => `
+      async function loadPubs(uid) {
+        const el = document.getElementById("pubList");
+        try {
+          const d = await api("/publications/" + uid);
+          if (!d.publications.length) {
+            el.innerHTML =
+              '<p style="color:var(--muted);font-size:14px">No publications yet</p>';
+            return;
+          }
+          el.innerHTML = d.publications
+            .map(
+              (p) => `
       <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start">
         <div>
           <div style="font-weight:500;font-size:14px">${p.title}</div>
-          <div style="color:var(--muted);font-size:12px">${p.journal||''} ${p.publicationDate ? '· '+new Date(p.publicationDate).getFullYear() : ''}</div>
+          <div style="color:var(--muted);font-size:12px">${p.journal || ""} ${p.publicationDate ? "· " + new Date(p.publicationDate).getFullYear() : ""}</div>
         </div>
         <button class="btn btn-danger btn-sm" onclick="deletePub('${p.id}')" style="margin-left:10px;flex-shrink:0">✕</button>
       </div>
-    `).join('');
-  } catch(e) { el.innerHTML = ''; }
-}
+    `,
+            )
+            .join("");
+        } catch (e) {
+          el.innerHTML = "";
+        }
+      }
 
-function switchProfileTab(tab) {
-  const isPubs = tab === 'pubs';
-  document.getElementById('tabPubsContent').style.display = isPubs ? '' : 'none';
-  document.getElementById('tabProjsContent').style.display = isPubs ? 'none' : '';
-  document.getElementById('tabPubs').style.borderBottomColor = isPubs ? 'var(--accent)' : 'transparent';
-  document.getElementById('tabPubs').style.color = isPubs ? 'var(--text)' : 'var(--muted)';
-  document.getElementById('tabPubs').style.fontWeight = isPubs ? '600' : '500';
-  document.getElementById('tabProjs').style.borderBottomColor = isPubs ? 'transparent' : 'var(--accent)';
-  document.getElementById('tabProjs').style.color = isPubs ? 'var(--muted)' : 'var(--text)';
-  document.getElementById('tabProjs').style.fontWeight = isPubs ? '500' : '600';
-}
+      function switchProfileTab(tab) {
+        const isPubs = tab === "pubs";
+        document.getElementById("tabPubsContent").style.display = isPubs
+          ? ""
+          : "none";
+        document.getElementById("tabProjsContent").style.display = isPubs
+          ? "none"
+          : "";
+        document.getElementById("tabPubs").style.borderBottomColor = isPubs
+          ? "var(--accent)"
+          : "transparent";
+        document.getElementById("tabPubs").style.color = isPubs
+          ? "var(--text)"
+          : "var(--muted)";
+        document.getElementById("tabPubs").style.fontWeight = isPubs
+          ? "600"
+          : "500";
+        document.getElementById("tabProjs").style.borderBottomColor = isPubs
+          ? "transparent"
+          : "var(--accent)";
+        document.getElementById("tabProjs").style.color = isPubs
+          ? "var(--muted)"
+          : "var(--text)";
+        document.getElementById("tabProjs").style.fontWeight = isPubs
+          ? "500"
+          : "600";
+      }
 
-async function loadProfileProjects(uid) {
-  const el = document.getElementById('profileProjectList');
-  if (!el) return;
-  try {
-    const d = await api('/projects?userId=' + uid + '&limit=50');
-    if (!d.projects.length) {
-      el.innerHTML = '<p style="color:var(--muted);font-size:14px">No projects yet. Post one to find collaborators!</p>';
-      return;
-    }
-    el.innerHTML = d.projects.map(p => {
-      const sm = STATUS_META[p.status] || { label: p.status, cls: 'tag-blue' };
-      return `
+      async function loadProfileProjects(uid) {
+        const el = document.getElementById("profileProjectList");
+        if (!el) return;
+        try {
+          const d = await api("/projects?userId=" + uid + "&limit=50");
+          if (!d.projects.length) {
+            el.innerHTML =
+              '<p style="color:var(--muted);font-size:14px">No projects yet. Post one to find collaborators!</p>';
+            return;
+          }
+          el.innerHTML = d.projects
+            .map((p) => {
+              const sm = STATUS_META[p.status] || {
+                label: p.status,
+                cls: "tag-blue",
+              };
+              return `
         <div style="padding:12px 0;border-bottom:1px solid var(--border)">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
             <div style="flex:1;min-width:0">
@@ -1349,7 +2791,7 @@ async function loadProfileProjects(uid) {
                 <span style="font-weight:500;font-size:14px">${p.title}</span>
                 <span class="tag ${sm.cls}" style="font-size:11px">${sm.label}</span>
               </div>
-              ${p.field ? `<div style="color:var(--muted);font-size:12px">${p.field}</div>` : ''}
+              ${p.field ? `<div style="color:var(--muted);font-size:12px">${p.field}</div>` : ""}
             </div>
             <div style="display:flex;gap:6px;flex-shrink:0">
               <button class="btn btn-ghost btn-sm" onclick="openEditProject('${p.id}')">Edit</button>
@@ -1357,106 +2799,162 @@ async function loadProfileProjects(uid) {
             </div>
           </div>
         </div>`;
-    }).join('');
-  } catch(e) { el.innerHTML = ''; }
-}
+            })
+            .join("");
+        } catch (e) {
+          el.innerHTML = "";
+        }
+      }
 
-async function deleteProfileProject(id) {
-  if (!confirm('Delete this project?')) return;
-  try {
-    await api('/projects/' + id, { method: 'DELETE' });
-    loadProfileProjects(currentUser.id);
-  } catch(e) { alert(e.message); }
-}
+      async function deleteProfileProject(id) {
+        if (!confirm("Delete this project?")) return;
+        try {
+          await api("/projects/" + id, { method: "DELETE" });
+          loadProfileProjects(currentUser.id);
+        } catch (e) {
+          alert(e.message);
+        }
+      }
 
-async function saveProfile() {
-  const err = document.getElementById('profileEditError');
-  const suc = document.getElementById('profileEditSuccess');
-  err.style.display = 'none'; suc.style.display = 'none';
-  try {
-    const d = await api('/researchers/' + currentUser.id, {
-      method: 'PUT',
-      body: JSON.stringify({
-        firstName: v('pFirst'), lastName: v('pLast'),
-        institution: v('pInstitution'), position: v('pPosition'),
-        bio: v('pBio'),
-        researchFields: v('pFields').split(',').map(s=>s.trim()).filter(Boolean),
-        hIndex: +v('pHIndex')
-      })
-    });
-    suc.textContent = 'Profile saved!'; suc.style.display = '';
-    const u = d.user;
-    currentUser = { ...currentUser, ...u };
-    localStorage.setItem('rc_user', JSON.stringify(currentUser));
-    document.getElementById('profileName').textContent = `${u.firstName} ${u.lastName}`;
-    document.getElementById('profileRole').textContent = `${u.position||''}${u.institution ? ' · '+u.institution : ''}`;
-    const pct = u.profileCompleteness || 0;
-    document.getElementById('profilePct').textContent = pct + '%';
-    document.getElementById('profileBar').style.width = pct + '%';
-  } catch(e) { err.textContent = e.message; err.style.display = ''; }
-}
+      async function saveProfile() {
+        const err = document.getElementById("profileEditError");
+        const suc = document.getElementById("profileEditSuccess");
+        err.style.display = "none";
+        suc.style.display = "none";
+        try {
+          const d = await api("/researchers/" + currentUser.id, {
+            method: "PUT",
+            body: JSON.stringify({
+              firstName: v("pFirst"),
+              lastName: v("pLast"),
+              institution: v("pInstitution"),
+              position: v("pPosition"),
+              bio: v("pBio"),
+              researchFields: v("pFields")
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean),
+              hIndex: +v("pHIndex"),
+            }),
+          });
+          suc.textContent = "Profile saved!";
+          suc.style.display = "";
+          const u = d.user;
+          currentUser = { ...currentUser, ...u };
+          localStorage.setItem("rc_user", JSON.stringify(currentUser));
+          document.getElementById("profileName").textContent =
+            `${u.firstName} ${u.lastName}`;
+          document.getElementById("profileRole").textContent =
+            `${u.position || ""}${u.institution ? " · " + u.institution : ""}`;
+          const pct = u.profileCompleteness || 0;
+          document.getElementById("profilePct").textContent = pct + "%";
+          document.getElementById("profileBar").style.width = pct + "%";
+        } catch (e) {
+          err.textContent = e.message;
+          err.style.display = "";
+        }
+      }
 
-function openPubModal() {
-  document.getElementById('pubDate').value = new Date().toISOString().split('T')[0];
-  document.getElementById('pubModal').classList.add('open');
-}
+      function openPubModal() {
+        document.getElementById("pubDate").value = new Date()
+          .toISOString()
+          .split("T")[0];
+        document.getElementById("pubModal").classList.add("open");
+      }
 
-async function submitPub() {
-  const err = document.getElementById('pubModalError');
-  err.style.display = 'none';
-  try {
-    await api('/publications', {
-      method: 'POST',
-      body: JSON.stringify({
-        title: v('pubTitle'),
-        authors: v('pubAuthors').split(',').map(s=>s.trim()),
-        journal: v('pubJournal'), publicationDate: v('pubDate'), doi: v('pubDoi')
-      })
-    });
-    closeModal('pubModal');
-    loadPubs(currentUser.id);
-  } catch(e) { err.textContent = e.message; err.style.display = ''; }
-}
+      async function submitPub() {
+        const err = document.getElementById("pubModalError");
+        err.style.display = "none";
+        try {
+          await api("/publications", {
+            method: "POST",
+            body: JSON.stringify({
+              title: v("pubTitle"),
+              authors: v("pubAuthors")
+                .split(",")
+                .map((s) => s.trim()),
+              journal: v("pubJournal"),
+              publicationDate: v("pubDate"),
+              doi: v("pubDoi"),
+            }),
+          });
+          closeModal("pubModal");
+          loadPubs(currentUser.id);
+        } catch (e) {
+          err.textContent = e.message;
+          err.style.display = "";
+        }
+      }
 
-async function deletePub(id) {
-  if (!confirm('Delete this publication?')) return;
-  try { await api('/publications/' + id, { method: 'DELETE' }); loadPubs(currentUser.id); }
-  catch(e) { alert(e.message); }
-}
+      async function deletePub(id) {
+        if (!confirm("Delete this publication?")) return;
+        try {
+          await api("/publications/" + id, { method: "DELETE" });
+          loadPubs(currentUser.id);
+        } catch (e) {
+          alert(e.message);
+        }
+      }
 
-// ─── MESSAGES ─────────────────────────────────────────────────────────────────
-async function loadMessages() {
-  if (!token) { navigate('login'); return; }
-  const el = document.getElementById('messagesContent');
-  el.innerHTML = '<div class="spinner"></div>';
-  try {
-    const d = await api('/messages');
-    const freshUnread = (d.conversations || []).reduce((s, c) => s + (c.unreadCount || 0), 0);
-    if (freshUnread !== unreadMessages) { unreadMessages = freshUnread; _notifAt = Date.now(); renderNav(); }
-    if (!d.conversations.length) {
-      el.innerHTML = `<div class="empty"><div class="empty-icon">💬</div><h3>No conversations yet</h3><p>Find a researcher and send them a message</p><button class="btn btn-primary" onclick="navigate('researchers')" style="margin-top:16px">Find Researchers</button></div>`;
-      return;
-    }
-    el.innerHTML = `<div class="convo-list">${d.conversations.map(c => `
+      // ─── MESSAGES ─────────────────────────────────────────────────────────────────
+      async function loadMessages() {
+        if (!token) {
+          navigate("login");
+          return;
+        }
+        const el = document.getElementById("messagesContent");
+        el.innerHTML = '<div class="spinner"></div>';
+        try {
+          const d = await api("/messages");
+          const freshUnread = (d.conversations || []).reduce(
+            (s, c) => s + (c.unreadCount || 0),
+            0,
+          );
+          if (freshUnread !== unreadMessages) {
+            unreadMessages = freshUnread;
+            _notifAt = Date.now();
+            renderNav();
+          }
+          if (!d.conversations.length) {
+            el.innerHTML = `<div class="empty"><div class="empty-icon">💬</div><h3>No conversations yet</h3><p>Find a researcher and send them a message</p><button class="btn btn-primary" onclick="navigate('researchers')" style="margin-top:16px">Find Researchers</button></div>`;
+            return;
+          }
+          el.innerHTML = `<div class="convo-list">${d.conversations
+            .map(
+              (c) => `
       <div class="convo-item" onclick="navigate('chat',{id:'${c.userId}',name:'${c.userName}'})">
-        <div class="avatar" style="background:${avatarColor(c.userName)}">${c.userName.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase()}</div>
+        <div class="avatar" style="background:${avatarColor(c.userName)}">${c.userName
+          .split(" ")
+          .map((w) => w[0] || "")
+          .join("")
+          .slice(0, 2)
+          .toUpperCase()}</div>
         <div class="convo-info">
           <div class="convo-name">${c.userName}</div>
-          <div class="convo-preview">${c.lastMessage||'No messages yet'}</div>
+          <div class="convo-preview">${c.lastMessage || "No messages yet"}</div>
         </div>
-        ${c.unreadCount > 0 ? `<span class="unread-badge">${c.unreadCount}</span>` : ''}
+        ${c.unreadCount > 0 ? `<span class="unread-badge">${c.unreadCount}</span>` : ""}
       </div>
-    `).join('')}</div>`;
-  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-}
+    `,
+            )
+            .join("")}</div>`;
+        } catch (e) {
+          el.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        }
+      }
 
-async function loadChat() {
-  const el = document.getElementById('chatContent');
-  el.innerHTML = `
+      async function loadChat() {
+        const el = document.getElementById("chatContent");
+        el.innerHTML = `
     <button class="btn btn-ghost btn-sm" onclick="navigate('messages')" style="margin-bottom:16px">← Back</button>
     <div class="card" style="padding:0;overflow:hidden">
       <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">
-        <div class="avatar" style="background:${avatarColor(chatWithName)}">${chatWithName?.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+        <div class="avatar" style="background:${avatarColor(chatWithName)}">${chatWithName
+          ?.split(" ")
+          .map((w) => w[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase()}</div>
         <div style="font-family:var(--font-head);font-weight:700">${chatWithName}</div>
       </div>
       <div class="chat-wrap">
@@ -1468,88 +2966,118 @@ async function loadChat() {
       </div>
     </div>
   `;
-  await refreshChat();
-}
+        await refreshChat();
+      }
 
-async function refreshChat() {
-  try {
-    const d = await api('/messages/' + chatWithId);
-    const el = document.getElementById('chatMsgs');
-    if (!d.messages.length) {
-      el.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px;font-size:14px">No messages yet — say hello!</p>';
-      return;
-    }
-    el.innerHTML = d.messages.map(m => `
-      <div style="display:flex;flex-direction:column;align-items:${m.senderId === currentUser?.id ? 'flex-end' : 'flex-start'}">
-        <div class="msg-bubble ${m.senderId === currentUser?.id ? 'mine' : 'theirs'}">${m.content}</div>
-        <div class="msg-time" style="text-align:${m.senderId === currentUser?.id ? 'right' : 'left'}">${timeAgo(m.createdAt)}</div>
+      async function refreshChat() {
+        try {
+          const d = await api("/messages/" + chatWithId);
+          const el = document.getElementById("chatMsgs");
+          if (!d.messages.length) {
+            el.innerHTML =
+              '<p style="text-align:center;color:var(--muted);padding:20px;font-size:14px">No messages yet — say hello!</p>';
+            return;
+          }
+          el.innerHTML = d.messages
+            .map(
+              (m) => `
+      <div style="display:flex;flex-direction:column;align-items:${m.senderId === currentUser?.id ? "flex-end" : "flex-start"}">
+        <div class="msg-bubble ${m.senderId === currentUser?.id ? "mine" : "theirs"}">${m.content}</div>
+        <div class="msg-time" style="text-align:${m.senderId === currentUser?.id ? "right" : "left"}">${timeAgo(m.createdAt)}</div>
       </div>
-    `).join('');
-    el.scrollTop = el.scrollHeight;
-  } catch(e) {}
-}
+    `,
+            )
+            .join("");
+          el.scrollTop = el.scrollHeight;
+        } catch (e) {}
+      }
 
-async function sendMsg() {
-  const input = document.getElementById('chatInput');
-  const content = input.value.trim();
-  if (!content) return;
-  input.value = '';
-  try {
-    await api('/messages/' + chatWithId, { method: 'POST', body: JSON.stringify({ content }) });
-    await refreshChat();
-  } catch(e) { alert(e.message); }
-}
+      async function sendMsg() {
+        const input = document.getElementById("chatInput");
+        const content = input.value.trim();
+        if (!content) return;
+        input.value = "";
+        try {
+          await api("/messages/" + chatWithId, {
+            method: "POST",
+            body: JSON.stringify({ content }),
+          });
+          await refreshChat();
+        } catch (e) {
+          alert(e.message);
+        }
+      }
 
-function openMsgModal(id, name) {
-  if (!token) { navigate('login'); return; }
-  msgTargetId = id;
-  document.getElementById('msgModalTitle').textContent = `Message ${name}`;
-  document.getElementById('msgModal').classList.add('open');
-}
+      function openMsgModal(id, name) {
+        if (!token) {
+          navigate("login");
+          return;
+        }
+        msgTargetId = id;
+        document.getElementById("msgModalTitle").textContent =
+          `Message ${name}`;
+        document.getElementById("msgModal").classList.add("open");
+      }
 
-async function sendQuickMsg() {
-  try {
-    await api('/messages/' + msgTargetId, { method: 'POST', body: JSON.stringify({ content: v('msgContent') }) });
-    closeModal('msgModal');
-    sv('msgContent', '');
-    alert('Message sent!');
-  } catch(e) { alert(e.message); }
-}
+      async function sendQuickMsg() {
+        try {
+          await api("/messages/" + msgTargetId, {
+            method: "POST",
+            body: JSON.stringify({ content: v("msgContent") }),
+          });
+          closeModal("msgModal");
+          sv("msgContent", "");
+          alert("Message sent!");
+        } catch (e) {
+          alert(e.message);
+        }
+      }
 
-// ─── PROJECTS ─────────────────────────────────────────────────────────────────
+      // ─── PROJECTS ─────────────────────────────────────────────────────────────────
 
-let pjDebounce;
-function debounceLoadProjects() { clearTimeout(pjDebounce); pjDebounce = setTimeout(loadProjects, 400); }
+      let pjDebounce;
+      function debounceLoadProjects() {
+        clearTimeout(pjDebounce);
+        pjDebounce = setTimeout(loadProjects, 400);
+      }
 
-const STATUS_META = {
-  'seeking-collaborators': { label: 'Seeking Collaborators', cls: 'tag-green' },
-  'ongoing':               { label: 'Ongoing',               cls: 'tag-blue' },
-  'completed':             { label: 'Completed',             cls: 'tag-purple' }
-};
+      const STATUS_META = {
+        "seeking-collaborators": {
+          label: "Seeking Collaborators",
+          cls: "tag-green",
+        },
+        ongoing: { label: "Ongoing", cls: "tag-blue" },
+        completed: { label: "Completed", cls: "tag-purple" },
+      };
 
-function projectCard(p, showOwner = true, isOwner = false) {
-  const sm = STATUS_META[p.status] || { label: p.status, cls: 'tag-blue' };
-  const ownerLine = showOwner && p.owner
-    ? `<span style="cursor:pointer;color:var(--accent)" onclick="navigate('researcher-profile','${p.owner.id}')">${p.owner.firstName} ${p.owner.lastName}</span>${p.owner.institution ? ' · ' + p.owner.institution : ''}`
-    : '';
-  const collab = !isOwner && token
-    ? `<button class="btn btn-green btn-sm" onclick="requestCollaborate('${p.id}','${p.title.replace(/'/g,"\\'")}')">🤝 Request to Collaborate</button>`
-    : '';
-  const edit = isOwner
-    ? `<button class="btn btn-ghost btn-sm" onclick="openEditProject('${p.id}')">Edit</button>
+      function projectCard(p, showOwner = true, isOwner = false) {
+        const sm = STATUS_META[p.status] || {
+          label: p.status,
+          cls: "tag-blue",
+        };
+        const ownerLine =
+          showOwner && p.owner
+            ? `<span style="cursor:pointer;color:var(--accent)" onclick="navigate('researcher-profile','${p.owner.id}')">${p.owner.firstName} ${p.owner.lastName}</span>${p.owner.institution ? " · " + p.owner.institution : ""}`
+            : "";
+        const collab =
+          !isOwner && token
+            ? `<button class="btn btn-green btn-sm" onclick="requestCollaborate('${p.id}','${p.title.replace(/'/g, "\\'")}')">🤝 Request to Collaborate</button>`
+            : "";
+        const edit = isOwner
+          ? `<button class="btn btn-ghost btn-sm" onclick="openEditProject('${p.id}')">Edit</button>
        <button class="btn btn-danger btn-sm" onclick="deleteProject('${p.id}')">Delete</button>`
-    : '';
-  return `
+          : "";
+        return `
     <div class="card" style="margin-bottom:16px" id="proj-${p.id}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
             <h3 style="font-family:var(--font-head);font-size:17px;font-weight:700;margin:0">${p.title}</h3>
             <span class="tag ${sm.cls}">${sm.label}</span>
-            ${p.field ? `<span class="tag tag-blue">${p.field}</span>` : ''}
+            ${p.field ? `<span class="tag tag-blue">${p.field}</span>` : ""}
           </div>
-          ${showOwner && ownerLine ? `<div style="font-size:13px;color:var(--muted);margin-bottom:10px">${ownerLine}</div>` : ''}
-          <p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:12px">${p.description.length > 280 ? p.description.slice(0,280) + '…' : p.description}</p>
+          ${showOwner && ownerLine ? `<div style="font-size:13px;color:var(--muted);margin-bottom:10px">${ownerLine}</div>` : ""}
+          <p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:12px">${p.description.length > 280 ? p.description.slice(0, 280) + "…" : p.description}</p>
           <div style="font-size:12px;color:var(--muted)">${timeAgo(p.createdAt)}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0">
@@ -1558,162 +3086,258 @@ function projectCard(p, showOwner = true, isOwner = false) {
         </div>
       </div>
     </div>`;
-}
+      }
 
-async function loadProjects() {
-  const list = document.getElementById('projectList');
-  list.innerHTML = '<div class="spinner"></div>';
-  const params = new URLSearchParams({ limit: 30 });
-  const f = v('pjField'); if (f) params.set('field', f);
-  const s = v('pjStatus'); if (s) params.set('status', s);
-  try {
-    const d = await api('/projects?' + params);
-    document.getElementById('projectCount').textContent = d.total + ' project' + (d.total !== 1 ? 's' : '');
-    if (!d.projects.length) {
-      list.innerHTML = `<div class="empty"><div class="empty-icon">🧪</div><h3>No projects found</h3><p>Be the first to post a research project</p></div>`;
-      return;
-    }
-    list.innerHTML = d.projects.map(p => projectCard(p, true, currentUser?.id && p.owner?.id?.toString() === currentUser.id?.toString())).join('');
-  } catch(e) { list.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-}
+      async function loadProjects() {
+        const list = document.getElementById("projectList");
+        list.innerHTML = '<div class="spinner"></div>';
+        const params = new URLSearchParams({ limit: 30 });
+        const f = v("pjField");
+        if (f) params.set("field", f);
+        const s = v("pjStatus");
+        if (s) params.set("status", s);
+        try {
+          const d = await api("/projects?" + params);
+          document.getElementById("projectCount").textContent =
+            d.total + " project" + (d.total !== 1 ? "s" : "");
+          if (!d.projects.length) {
+            list.innerHTML = `<div class="empty"><div class="empty-icon">🧪</div><h3>No projects found</h3><p>Be the first to post a research project</p></div>`;
+            return;
+          }
+          list.innerHTML = d.projects
+            .map((p) =>
+              projectCard(
+                p,
+                true,
+                currentUser?.id &&
+                  p.owner?.id?.toString() === currentUser.id?.toString(),
+              ),
+            )
+            .join("");
+        } catch (e) {
+          list.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        }
+      }
 
-async function loadMyProjects() {
-  const list = document.getElementById('myProjectList');
-  list.innerHTML = '<div class="spinner"></div>';
-  try {
-    const d = await api('/projects?userId=' + currentUser.id + '&limit=50');
-    if (!d.projects.length) {
-      list.innerHTML = `<div class="empty"><div class="empty-icon">🧪</div><h3>No projects yet</h3><p>Post your first research project to find collaborators</p><br><button class="btn btn-primary" onclick="openProjectModal()">+ Post a Project</button></div>`;
-      return;
-    }
-    list.innerHTML = d.projects.map(p => projectCard(p, false, true)).join('');
-  } catch(e) { list.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-}
+      async function loadMyProjects() {
+        const list = document.getElementById("myProjectList");
+        list.innerHTML = '<div class="spinner"></div>';
+        try {
+          const d = await api(
+            "/projects?userId=" + currentUser.id + "&limit=50",
+          );
+          if (!d.projects.length) {
+            list.innerHTML = `<div class="empty"><div class="empty-icon">🧪</div><h3>No projects yet</h3><p>Post your first research project to find collaborators</p><br><button class="btn btn-primary" onclick="openProjectModal()">+ Post a Project</button></div>`;
+            return;
+          }
+          list.innerHTML = d.projects
+            .map((p) => projectCard(p, false, true))
+            .join("");
+        } catch (e) {
+          list.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        }
+      }
 
-function openProjectModal() {
-  if (!token) { navigate('login'); return; }
-  sv('pmTitle', ''); sv('pmDesc', ''); sv('pmField', ''); sv('pmEditId', '');
-  document.getElementById('pmStatus').value = 'ongoing';
-  document.getElementById('projectModalTitle').textContent = 'Post a Project';
-  document.querySelector('#projectModal .btn-primary').textContent = 'Post Project';
-  document.getElementById('projectModalError').style.display = 'none';
-  document.getElementById('projectModal').classList.add('open');
-}
+      function openProjectModal() {
+        if (!token) {
+          navigate("login");
+          return;
+        }
+        sv("pmTitle", "");
+        sv("pmDesc", "");
+        sv("pmField", "");
+        sv("pmEditId", "");
+        document.getElementById("pmStatus").value = "ongoing";
+        document.getElementById("projectModalTitle").textContent =
+          "Post a Project";
+        document.querySelector("#projectModal .btn-primary").textContent =
+          "Post Project";
+        document.getElementById("projectModalError").style.display = "none";
+        document.getElementById("projectModal").classList.add("open");
+      }
 
-async function openEditProject(id) {
-  if (!token) return;
-  try {
-    const p = await api('/projects/' + id);
-    sv('pmTitle', p.title); sv('pmDesc', p.description); sv('pmField', p.field); sv('pmEditId', id);
-    document.getElementById('pmStatus').value = p.status;
-    document.getElementById('projectModalTitle').textContent = 'Edit Project';
-    document.querySelector('#projectModal .btn-primary').textContent = 'Save Changes';
-    document.getElementById('projectModalError').style.display = 'none';
-    document.getElementById('projectModal').classList.add('open');
-  } catch(e) { alert(e.message); }
-}
+      async function openEditProject(id) {
+        if (!token) return;
+        try {
+          const p = await api("/projects/" + id);
+          sv("pmTitle", p.title);
+          sv("pmDesc", p.description);
+          sv("pmField", p.field);
+          sv("pmEditId", id);
+          document.getElementById("pmStatus").value = p.status;
+          document.getElementById("projectModalTitle").textContent =
+            "Edit Project";
+          document.querySelector("#projectModal .btn-primary").textContent =
+            "Save Changes";
+          document.getElementById("projectModalError").style.display = "none";
+          document.getElementById("projectModal").classList.add("open");
+        } catch (e) {
+          alert(e.message);
+        }
+      }
 
-async function submitProject() {
-  const title = v('pmTitle'), desc = v('pmDesc'), field = v('pmField');
-  const status = document.getElementById('pmStatus').value;
-  const editId = v('pmEditId');
-  const errEl = document.getElementById('projectModalError');
-  errEl.style.display = 'none';
-  if (!title || !desc) { errEl.textContent = 'Title and description are required.'; errEl.style.display = ''; return; }
-  try {
-    const body = JSON.stringify({ title, description: desc, field, status });
-    if (editId) {
-      await api('/projects/' + editId, { method: 'PUT', body });
-    } else {
-      await api('/projects', { method: 'POST', body });
-    }
-    closeModal('projectModal');
-    if (currentPage === 'projects') loadProjects();
-    if (currentPage === 'my-projects') loadMyProjects();
-    if (currentPage === 'profile') loadProfileProjects(currentUser.id);
-  } catch(e) { errEl.textContent = e.message; errEl.style.display = ''; }
-}
+      async function submitProject() {
+        const title = v("pmTitle"),
+          desc = v("pmDesc"),
+          field = v("pmField");
+        const status = document.getElementById("pmStatus").value;
+        const editId = v("pmEditId");
+        const errEl = document.getElementById("projectModalError");
+        errEl.style.display = "none";
+        if (!title || !desc) {
+          errEl.textContent = "Title and description are required.";
+          errEl.style.display = "";
+          return;
+        }
+        try {
+          const body = JSON.stringify({
+            title,
+            description: desc,
+            field,
+            status,
+          });
+          if (editId) {
+            await api("/projects/" + editId, { method: "PUT", body });
+          } else {
+            await api("/projects", { method: "POST", body });
+          }
+          closeModal("projectModal");
+          if (currentPage === "projects") loadProjects();
+          if (currentPage === "my-projects") loadMyProjects();
+          if (currentPage === "profile") loadProfileProjects(currentUser.id);
+        } catch (e) {
+          errEl.textContent = e.message;
+          errEl.style.display = "";
+        }
+      }
 
-async function deleteProject(id) {
-  if (!confirm('Delete this project?')) return;
-  try {
-    await api('/projects/' + id, { method: 'DELETE' });
-    document.getElementById('proj-' + id)?.remove();
-  } catch(e) { alert(e.message); }
-}
+      async function deleteProject(id) {
+        if (!confirm("Delete this project?")) return;
+        try {
+          await api("/projects/" + id, { method: "DELETE" });
+          document.getElementById("proj-" + id)?.remove();
+        } catch (e) {
+          alert(e.message);
+        }
+      }
 
-async function requestCollaborate(projectId, projectTitle) {
-  if (!token) { navigate('login'); return; }
-  const btn = event.target;
-  btn.disabled = true; btn.textContent = 'Sending…';
-  try {
-    await api('/projects/' + projectId + '/collaborate', { method: 'POST' });
-    btn.textContent = '✓ Request Sent';
-    btn.classList.remove('btn-green'); btn.classList.add('btn-ghost');
-  } catch(e) {
-    btn.disabled = false; btn.textContent = '🤝 Request to Collaborate';
-    alert(e.message);
-  }
-}
+      async function requestCollaborate(projectId, projectTitle) {
+        if (!token) {
+          navigate("login");
+          return;
+        }
+        const btn = event.target;
+        btn.disabled = true;
+        btn.textContent = "Sending…";
+        try {
+          await api("/projects/" + projectId + "/collaborate", {
+            method: "POST",
+          });
+          btn.textContent = "✓ Request Sent";
+          btn.classList.remove("btn-green");
+          btn.classList.add("btn-ghost");
+        } catch (e) {
+          btn.disabled = false;
+          btn.textContent = "🤝 Request to Collaborate";
+          alert(e.message);
+        }
+      }
 
-// ─── MODALS ───────────────────────────────────────────────────────────────────
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(m => {
-  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
-});
+      // ─── MODALS ───────────────────────────────────────────────────────────────────
+      function closeModal(id) {
+        document.getElementById(id).classList.remove("open");
+      }
+      document.querySelectorAll(".modal-overlay").forEach((m) => {
+        m.addEventListener("click", (e) => {
+          if (e.target === m) m.classList.remove("open");
+        });
+      });
 
-// ─── UTILS ────────────────────────────────────────────────────────────────────
-function v(id) { return (document.getElementById(id)?.value || '').trim(); }
-function sv(id, val) { const el = document.getElementById(id); if (el) el.value = val || ''; }
-function initials(first, last) { return ((first?.[0]||'') + (last?.[0]||'')).toUpperCase() || '?'; }
-function avatarColor(name) {
-  const colors = ['#4f8ef7','#7c5cbf','#2dd4a0','#f5c842','#f05a5a','#e67e22','#1abc9c'];
-  let h = 0; for (let c of (name||'')) h = c.charCodeAt(0) + ((h<<5)-h);
-  return colors[Math.abs(h) % colors.length];
-}
-function timeAgo(date) {
-  if (!date) return '';
-  const s = Math.floor((Date.now() - new Date(date)) / 1000);
-  if (s < 60) return 'just now';
-  if (s < 3600) return Math.floor(s/60) + 'm ago';
-  if (s < 86400) return Math.floor(s/3600) + 'h ago';
-  return Math.floor(s/86400) + 'd ago';
-}
+      // ─── UTILS ────────────────────────────────────────────────────────────────────
+      function v(id) {
+        return (document.getElementById(id)?.value || "").trim();
+      }
+      function sv(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.value = val || "";
+      }
+      function initials(first, last) {
+        return ((first?.[0] || "") + (last?.[0] || "")).toUpperCase() || "?";
+      }
+      function avatarColor(name) {
+        const colors = [
+          "#4f8ef7",
+          "#7c5cbf",
+          "#2dd4a0",
+          "#f5c842",
+          "#f05a5a",
+          "#e67e22",
+          "#1abc9c",
+        ];
+        let h = 0;
+        for (let c of name || "") h = c.charCodeAt(0) + ((h << 5) - h);
+        return colors[Math.abs(h) % colors.length];
+      }
+      function timeAgo(date) {
+        if (!date) return "";
+        const s = Math.floor((Date.now() - new Date(date)) / 1000);
+        if (s < 60) return "just now";
+        if (s < 3600) return Math.floor(s / 60) + "m ago";
+        if (s < 86400) return Math.floor(s / 3600) + "h ago";
+        return Math.floor(s / 86400) + "d ago";
+      }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-const AUTH_ONLY = new Set(['dashboard', 'profile', 'messages', 'chat', 'my-projects', 'my-applications']);
+      // ─── INIT ─────────────────────────────────────────────────────────────────────
+      const AUTH_ONLY = new Set([
+        "dashboard",
+        "profile",
+        "messages",
+        "chat",
+        "my-projects",
+        "my-applications",
+      ]);
 
-async function init() {
-  if (token) {
-    try {
-      const d = await api('/auth/me');
-      currentUser = { ...currentUser, ...d.user };
-      localStorage.setItem('rc_user', JSON.stringify(currentUser));
-    } catch { token = null; localStorage.removeItem('rc_token'); }
-  }
+      async function init() {
+        if (token) {
+          try {
+            const d = await api("/auth/me");
+            currentUser = { ...currentUser, ...d.user };
+            localStorage.setItem("rc_user", JSON.stringify(currentUser));
+          } catch {
+            token = null;
+            localStorage.removeItem("rc_token");
+          }
+        }
 
-  // Determine starting page from the URL the user actually loaded
-  const { page: urlPage, extra: urlExtra } = pathToPage(location.pathname);
-  const needsAuth = AUTH_ONLY.has(urlPage) && !token;
-  const isRoot    = urlPage === 'home';
-  const startPage  = needsAuth || isRoot ? (token ? 'dashboard' : 'home') : urlPage;
-  const startExtra = needsAuth || isRoot ? undefined : urlExtra;
+        // Determine starting page from the URL the user actually loaded
+        const { page: urlPage, extra: urlExtra } = pathToPage(
+          location.pathname,
+        );
+        const needsAuth = AUTH_ONLY.has(urlPage) && !token;
+        const isRoot = urlPage === "home";
+        const startPage =
+          needsAuth || isRoot ? (token ? "dashboard" : "home") : urlPage;
+        const startExtra = needsAuth || isRoot ? undefined : urlExtra;
 
-  // Navigate without pushing — then replace the initial history entry with the
-  // correct URL so the very first back-button press doesn't leave the app
-  _popstateNav = true;
-  navigate(startPage, startExtra);
-  _popstateNav = false;
-  history.replaceState({ page: startPage, extra: startExtra }, '', pageToPath(startPage, startExtra));
-}
+        // Navigate without pushing — then replace the initial history entry with the
+        // correct URL so the very first back-button press doesn't leave the app
+        _popstateNav = true;
+        navigate(startPage, startExtra);
+        _popstateNav = false;
+        history.replaceState(
+          { page: startPage, extra: startExtra },
+          "",
+          pageToPath(startPage, startExtra),
+        );
+      }
 
-init();
+      init();
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
-  });
-}
-</script>
-</body>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/sw.js").catch(() => {});
+        });
+      }
+    </script>
+  </body>
 </html>

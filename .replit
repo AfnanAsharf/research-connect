@@ -6,8 +6,8 @@ modules = ["nodejs-20"]
 channel = "stable-23_11"
 
 [deployment]
-run = ["sh", "-c", "node server.js"]
-deploymentTarget = "cloudrun"
+run = ["node", "server.js"]
+deploymentTarget = "autoscale"
 
 [agent]
 expertMode = true

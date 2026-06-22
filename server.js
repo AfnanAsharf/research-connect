@@ -14,13 +14,18 @@ const JWT_SECRET = process.env.JWT_SECRET || 'researchconnect_dev_secret_2026';
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  console.error('ERROR: MONGODB_URI environment variable is not set.');
-  process.exit(1);
+  console.error('WARN: MONGODB_URI is not set — database features will be unavailable.');
 }
 
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => { console.error('MongoDB connection error:', err); process.exit(1); });
+if (MONGODB_URI) {
+  mongoose.connect(MONGODB_URI, { serverSelectionTimeoutMS: 10000 })
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => {
+      // Log but do not exit — the health check must succeed even if the DB
+      // is temporarily unreachable, and mongoose will retry automatically.
+      console.error('MongoDB connection error:', err.message);
+    });
+}
 
 app.use(helmet({
   contentSecurityPolicy: false,

@@ -227,6 +227,109 @@
         pointer-events: none;
       }
 
+      /* ── Notification Dropdown ── */
+      .notif-wrap {
+        position: relative;
+      }
+      .notif-dropdown {
+        display: none;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        width: 360px;
+        max-height: 480px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        z-index: 200;
+        overflow: hidden;
+        flex-direction: column;
+      }
+      .notif-dropdown.open {
+        display: flex;
+      }
+      .notif-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px 10px;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .notif-header-title {
+        font-family: var(--font-head);
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .notif-mark-all {
+        background: none;
+        border: none;
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        padding: 0;
+        font-family: var(--font-body);
+      }
+      .notif-mark-all:hover { opacity: 0.8; }
+      .notif-list {
+        overflow-y: auto;
+        flex: 1;
+      }
+      .notif-item {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.12s;
+      }
+      .notif-item:last-child { border-bottom: none; }
+      .notif-item:hover { background: var(--surface2); }
+      .notif-item.unread { background: rgba(79,142,247,0.06); }
+      .notif-item.unread:hover { background: rgba(79,142,247,0.12); }
+      .notif-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--surface2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .notif-body { flex: 1; min-width: 0; }
+      .notif-msg {
+        font-size: 13px;
+        color: var(--text);
+        line-height: 1.4;
+        margin-bottom: 3px;
+      }
+      .notif-time {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .notif-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+        flex-shrink: 0;
+        margin-top: 6px;
+      }
+      .notif-empty {
+        padding: 40px 20px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .notif-empty .notif-empty-icon { font-size: 32px; margin-bottom: 8px; }
+
       main {
         flex: 1;
         max-width: 1100px;
@@ -1787,6 +1890,9 @@
       let pendingCount = 0; // live count shown in notification bell
       let unreadMessages = 0; // live unread message count shown on Messages link
       let _notifAt = 0; // timestamp of last background refresh
+      let unreadNotifCount = 0; // total unread notifications
+      let notifItems = []; // cached notification list
+      let notifDropdownOpen = false;
       let _popstateNav = false; // true while popstate is handling back/forward
 
       const API = ""; // same origin
@@ -1886,10 +1992,22 @@
       function renderNav() {
         const nav = document.getElementById("navLinks");
         if (token) {
+          const totalBadge = unreadNotifCount;
           const bell = `
-      <button class="nav-bell" onclick="navigate('dashboard')" title="${pendingCount ? pendingCount + " pending connection request" + (pendingCount > 1 ? "s" : "") : "Notifications"}">
-        🔔${pendingCount > 0 ? `<span class="nbadge">${pendingCount > 9 ? "9+" : pendingCount}</span>` : ""}
-      </button>`;
+      <div class="notif-wrap" id="notifWrap">
+        <button class="nav-bell" id="bellBtn" onclick="toggleNotifDropdown(event)" title="Notifications">
+          🔔${totalBadge > 0 ? `<span class="nbadge">${totalBadge > 9 ? "9+" : totalBadge}</span>` : ""}
+        </button>
+        <div class="notif-dropdown${notifDropdownOpen ? " open" : ""}" id="notifDropdown">
+          <div class="notif-header">
+            <span class="notif-header-title">Notifications${unreadNotifCount > 0 ? ` <span style="background:var(--accent);color:#fff;font-size:10px;padding:1px 7px;border-radius:20px;font-family:var(--font-body);font-weight:600;vertical-align:middle">${unreadNotifCount}</span>` : ""}</span>
+            ${unreadNotifCount > 0 ? `<button class="notif-mark-all" onclick="markAllNotifsRead(event)">Mark all read</button>` : ""}
+          </div>
+          <div class="notif-list" id="notifList">
+            ${renderNotifItems()}
+          </div>
+        </div>
+      </div>`;
           nav.innerHTML = `
       <a href="#" onclick="navigate('dashboard')" class="${currentPage === "dashboard" ? "active" : ""}">Dashboard</a>
       <a href="#" onclick="navigate('researchers')" class="${currentPage === "researchers" || currentPage === "researcher-profile" ? "active" : ""}">Researchers</a>
@@ -1911,29 +2029,115 @@
         }
       }
 
-      // Fetch pending connections + unread messages in parallel; throttled to once per 15s
+      // Fetch pending connections + unread messages + notification count; throttled to once per 15s
       async function refreshAllCounts() {
         if (!token) return;
         const now = Date.now();
         if (now - _notifAt < 15000) return;
         _notifAt = now;
         try {
-          const [notifs, msgs] = await Promise.all([
+          const [notifs, msgs, nc] = await Promise.all([
             api("/connections/pending").catch(() => ({ pending: [] })),
             api("/messages").catch(() => ({ conversations: [] })),
+            api("/notifications/unread-count").catch(() => ({ count: 0 })),
           ]);
           const freshPending = (notifs.pending || []).length;
           const freshUnread = (msgs.conversations || []).reduce(
             (s, c) => s + (c.unreadCount || 0),
             0,
           );
-          if (freshPending !== pendingCount || freshUnread !== unreadMessages) {
+          const freshNotifCount = nc.count || 0;
+          if (freshPending !== pendingCount || freshUnread !== unreadMessages || freshNotifCount !== unreadNotifCount) {
             pendingCount = freshPending;
             unreadMessages = freshUnread;
+            unreadNotifCount = freshNotifCount;
             renderNav();
           }
         } catch (e) {}
       }
+
+      // ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
+
+      const NOTIF_ICONS = {
+        connection_request:      '🤝',
+        connection_accepted:     '✅',
+        message_received:        '💬',
+        job_application_received:'📋',
+        collaboration_request:   '🧪',
+      };
+
+      function notifNavigate(n) {
+        closeNotifDropdown();
+        if (n.type === 'connection_request')       navigate('dashboard');
+        else if (n.type === 'connection_accepted') navigate('researcher-profile', n.actorId);
+        else if (n.type === 'message_received')    navigate('chat', { id: n.referenceId, name: n.actorName });
+        else if (n.type === 'job_application_received') navigate('job-detail', n.referenceId);
+        else if (n.type === 'collaboration_request') navigate('projects');
+      }
+
+      async function markNotifRead(id, n) {
+        if (!n.isRead) {
+          api('/notifications/' + id + '/read', { method: 'PUT' }).catch(() => {});
+          n.isRead = true;
+          unreadNotifCount = Math.max(0, unreadNotifCount - 1);
+        }
+        notifNavigate(n);
+        renderNav();
+      }
+
+      async function markAllNotifsRead(e) {
+        e.stopPropagation();
+        try {
+          await api('/notifications/read-all', { method: 'PUT' });
+          notifItems.forEach(n => { n.isRead = true; });
+          unreadNotifCount = 0;
+          renderNav();
+        } catch (err) {}
+      }
+
+      async function loadNotifications() {
+        try {
+          const d = await api('/notifications');
+          notifItems = d.notifications || [];
+          unreadNotifCount = d.unreadCount || 0;
+          renderNav();
+        } catch (e) {}
+      }
+
+      function renderNotifItems() {
+        if (!notifItems.length) {
+          return `<div class="notif-empty"><div class="notif-empty-icon">🔔</div><div>No notifications yet</div></div>`;
+        }
+        return notifItems.map(n => `
+          <div class="notif-item${n.isRead ? '' : ' unread'}" onclick="markNotifRead('${n.id}', notifItems.find(x=>x.id==='${n.id}'))">
+            <div class="notif-icon">${NOTIF_ICONS[n.type] || '🔔'}</div>
+            <div class="notif-body">
+              <div class="notif-msg">${n.message}</div>
+              <div class="notif-time">${timeAgo(n.createdAt)}</div>
+            </div>
+            ${!n.isRead ? '<div class="notif-dot"></div>' : ''}
+          </div>`).join('');
+      }
+
+      function toggleNotifDropdown(e) {
+        e.stopPropagation();
+        notifDropdownOpen = !notifDropdownOpen;
+        if (notifDropdownOpen) loadNotifications();
+        renderNav();
+      }
+
+      function closeNotifDropdown() {
+        if (notifDropdownOpen) {
+          notifDropdownOpen = false;
+          renderNav();
+        }
+      }
+
+      document.addEventListener('click', (e) => {
+        if (notifDropdownOpen && !e.target.closest('#notifWrap')) {
+          closeNotifDropdown();
+        }
+      });
 
       function renderHomeCTA() {
         const cta = document.getElementById("heroCta");

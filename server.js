@@ -200,6 +200,17 @@ const projectSchema = new mongoose.Schema({
   created_at: { type: Date, default: Date.now }
 });
 
+const notificationSchema = new mongoose.Schema({
+  recipient_id: { type: String, required: true },
+  actor_id:     { type: String, required: true },
+  actor_name:   { type: String, default: '' },
+  type:         { type: String, required: true },
+  reference_id: { type: String, default: '' },
+  message:      { type: String, default: '' },
+  is_read:      { type: Boolean, default: false },
+  created_at:   { type: Date, default: Date.now }
+});
+
 const User        = mongoose.model('User',        userSchema);
 const Job         = mongoose.model('Job',         jobSchema);
 const JobApplication = mongoose.model('JobApplication', jobApplicationSchema);
@@ -207,6 +218,7 @@ const Message     = mongoose.model('Message',     messageSchema);
 const Connection  = mongoose.model('Connection',  connectionSchema);
 const Publication = mongoose.model('Publication', publicationSchema);
 const Project     = mongoose.model('Project',     projectSchema);
+const Notification = mongoose.model('Notification', notificationSchema);
 
 // ─── Shared Helpers ───────────────────────────────────────────────────────────
 
@@ -230,6 +242,15 @@ function userPublic(u) {
     researchFields: u.research_fields, hIndex: u.h_index,
     totalPublications: u.total_publications, profileCompleteness: u.profile_completeness
   };
+}
+
+// Fire-and-forget helper — never throws, so callers don't need try/catch
+async function createNotification(fields) {
+  try {
+    await Notification.create(fields);
+  } catch (e) {
+    console.error('createNotification error:', e.message);
+  }
 }
 
 // ─── Auth Middleware ──────────────────────────────────────────────────────────
@@ -480,6 +501,15 @@ app.post('/api/jobs/:id/apply', auth, async (req, res) => {
     if (existing) return res.status(409).json({ error: 'Conflict', messages: ['You have already applied to this job'] });
 
     await JobApplication.create({ job_id: req.params.id, user_id: req.user.userId, message: message.trim() });
+
+    const applicant = await User.findById(req.user.userId).select('first_name last_name').catch(() => null);
+    const actorName = applicant ? `${applicant.first_name} ${applicant.last_name}`.trim() : 'Someone';
+    createNotification({
+      recipient_id: job.posted_by_user_id, actor_id: req.user.userId, actor_name: actorName,
+      type: 'job_application_received', reference_id: req.params.id,
+      message: `${actorName} applied to your job: ${job.title}`
+    });
+
     res.status(201).json({ message: 'Application submitted' });
   } catch (e) { handleError(res, e); }
 });
@@ -602,6 +632,22 @@ app.post('/api/messages/:userId', auth, async (req, res) => {
     if (!recipient) return res.status(404).json({ error: 'Not found', messages: ['Recipient not found'] });
 
     const msg = await Message.create({ sender_id: req.user.userId, recipient_id: req.params.userId, content: content.trim() });
+
+    // Throttle: one notification per sender-recipient pair per 5 minutes
+    const recentNotif = await Notification.findOne({
+      recipient_id: req.params.userId, actor_id: req.user.userId,
+      type: 'message_received', created_at: { $gt: new Date(Date.now() - 5 * 60 * 1000) }
+    });
+    if (!recentNotif) {
+      const sender = await User.findById(req.user.userId).select('first_name last_name').catch(() => null);
+      const actorName = sender ? `${sender.first_name} ${sender.last_name}`.trim() : 'Someone';
+      createNotification({
+        recipient_id: req.params.userId, actor_id: req.user.userId, actor_name: actorName,
+        type: 'message_received', reference_id: req.user.userId,
+        message: `${actorName} sent you a message`
+      });
+    }
+
     res.status(201).json({ message: 'Sent', id: msg._id });
   } catch (e) { handleError(res, e); }
 });
@@ -640,6 +686,15 @@ app.post('/api/connections/:userId/request', auth, async (req, res) => {
     if (exists) return res.status(409).json({ error: 'Conflict', messages: ['A connection with this user already exists'] });
 
     const conn = await Connection.create({ user_id_1: myId, user_id_2: otherId });
+
+    const requester = await User.findById(myId).select('first_name last_name').catch(() => null);
+    const actorName = requester ? `${requester.first_name} ${requester.last_name}`.trim() : 'Someone';
+    createNotification({
+      recipient_id: otherId, actor_id: myId, actor_name: actorName,
+      type: 'connection_request', reference_id: conn._id.toString(),
+      message: `${actorName} sent you a connection request`
+    });
+
     res.status(201).json({ message: 'Request sent', id: conn._id });
   } catch (e) { handleError(res, e); }
 });
@@ -659,6 +714,17 @@ app.put('/api/connections/:connectionId', auth, async (req, res) => {
 
     conn.status = status === 'accepted' ? 'connected' : 'rejected';
     await conn.save();
+
+    if (status === 'accepted') {
+      const acceptor = await User.findById(req.user.userId).select('first_name last_name').catch(() => null);
+      const actorName = acceptor ? `${acceptor.first_name} ${acceptor.last_name}`.trim() : 'Someone';
+      createNotification({
+        recipient_id: conn.user_id_1, actor_id: req.user.userId, actor_name: actorName,
+        type: 'connection_accepted', reference_id: req.user.userId,
+        message: `${actorName} accepted your connection request`
+      });
+    }
+
     res.json({ message: `Connection ${status}`, connection: { id: conn._id, status: conn.status } });
   } catch (e) { handleError(res, e); }
 });
@@ -828,7 +894,58 @@ app.post('/api/projects/:id/collaborate', auth, async (req, res) => {
 
     const content = `Hi! I came across your project "${project.title}" and I'm interested in collaborating. I'd love to discuss how we might work together. Looking forward to hearing from you!`;
     const msg = await Message.create({ sender_id: req.user.userId, recipient_id: project.user_id, content });
+
+    const requester = await User.findById(req.user.userId).select('first_name last_name').catch(() => null);
+    const actorName = requester ? `${requester.first_name} ${requester.last_name}`.trim() : 'Someone';
+    createNotification({
+      recipient_id: project.user_id, actor_id: req.user.userId, actor_name: actorName,
+      type: 'collaboration_request', reference_id: project._id.toString(),
+      message: `${actorName} wants to collaborate on your project: ${project.title}`
+    });
+
     res.status(201).json({ message: 'Collaboration request sent', id: msg._id });
+  } catch (e) { handleError(res, e); }
+});
+
+// ─── NOTIFICATION ROUTES ──────────────────────────────────────────────────────
+
+app.get('/api/notifications', auth, async (req, res) => {
+  try {
+    const notifs = await Notification.find({ recipient_id: req.user.userId })
+      .sort({ created_at: -1 }).limit(30);
+    const unreadCount = notifs.filter(n => !n.is_read).length;
+    res.json({
+      notifications: notifs.map(n => ({
+        id: n._id, type: n.type, actorId: n.actor_id, actorName: n.actor_name,
+        referenceId: n.reference_id, message: n.message, isRead: n.is_read, createdAt: n.created_at
+      })),
+      unreadCount
+    });
+  } catch (e) { handleError(res, e); }
+});
+
+app.get('/api/notifications/unread-count', auth, async (req, res) => {
+  try {
+    const count = await Notification.countDocuments({ recipient_id: req.user.userId, is_read: false });
+    res.json({ count });
+  } catch (e) { handleError(res, e); }
+});
+
+// read-all must come before /:id/read so Express doesn't treat "read-all" as an id
+app.put('/api/notifications/read-all', auth, async (req, res) => {
+  try {
+    await Notification.updateMany({ recipient_id: req.user.userId, is_read: false }, { is_read: true });
+    res.json({ message: 'All marked as read' });
+  } catch (e) { handleError(res, e); }
+});
+
+app.put('/api/notifications/:id/read', auth, async (req, res) => {
+  try {
+    await Notification.findOneAndUpdate(
+      { _id: req.params.id, recipient_id: req.user.userId },
+      { is_read: true }
+    );
+    res.json({ message: 'Marked as read' });
   } catch (e) { handleError(res, e); }
 });
 

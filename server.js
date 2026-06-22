@@ -134,6 +134,7 @@ const userSchema = new mongoose.Schema({
   position:            { type: String, default: '' },
   bio:                 { type: String, default: '' },
   research_fields:     { type: [String], default: [] },
+  skills:              { type: [String], default: [] },
   h_index:             { type: Number, default: 0 },
   total_publications:  { type: Number, default: 0 },
   profile_completeness:{ type: Number, default: 20 },
@@ -241,7 +242,7 @@ function userPublic(u) {
     id: u._id, email: u.email,
     firstName: u.first_name, lastName: u.last_name,
     institution: u.institution, position: u.position, bio: u.bio,
-    researchFields: u.research_fields, hIndex: u.h_index,
+    researchFields: u.research_fields, skills: u.skills, hIndex: u.h_index,
     totalPublications: u.total_publications, profileCompleteness: u.profile_completeness,
     avatarUrl: u.avatar_data ? `/api/profile/avatar/${u._id}` : ''
   };
@@ -411,7 +412,7 @@ app.put('/api/researchers/:id', auth, async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: 'Not found', messages: ['Researcher not found'] });
 
-    const { firstName, lastName, institution, position, bio, researchFields, hIndex } = req.body;
+    const { firstName, lastName, institution, position, bio, researchFields, skills, hIndex } = req.body;
 
     const errors = validateFields([
       { condition: firstName    !== undefined && (typeof firstName !== 'string' || firstName.trim().length > 100),  message: 'First name must be 100 characters or fewer' },
@@ -424,6 +425,8 @@ app.put('/api/researchers/:id', auth, async (req, res) => {
       { condition: bio          !== undefined && bio.trim().length > 2000,                                          message: 'Bio must be 2000 characters or fewer' },
       { condition: researchFields !== undefined && !Array.isArray(researchFields),                                  message: 'Research fields must be an array' },
       { condition: Array.isArray(researchFields) && researchFields.length > 20,                                     message: 'You can list at most 20 research fields' },
+      { condition: skills !== undefined && !Array.isArray(skills),                                                  message: 'Skills must be an array' },
+      { condition: Array.isArray(skills) && skills.length > 30,                                                     message: 'You can list at most 30 skills' },
       { condition: hIndex !== undefined && (typeof hIndex !== 'number' || !Number.isInteger(hIndex) || hIndex < 0), message: 'H-index must be a non-negative integer' },
     ]);
     if (errors.length) return badRequest(res, errors);
@@ -434,6 +437,7 @@ app.put('/api/researchers/:id', auth, async (req, res) => {
     if (position    !== undefined) user.position        = position.trim();
     if (bio         !== undefined) user.bio             = bio.trim();
     if (researchFields !== undefined) user.research_fields = researchFields.map(f => String(f).trim()).filter(Boolean);
+    if (skills      !== undefined) user.skills          = skills.map(s => String(s).trim()).filter(Boolean);
     if (hIndex      !== undefined) user.h_index         = hIndex;
     user.profile_completeness = calcCompleteness(user);
 

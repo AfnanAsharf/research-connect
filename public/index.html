@@ -4,7 +4,7 @@
     <!-- SEO Meta Tags -->
     <meta
       name="description"
-      content="ResearchConnect — Where scientists connect and grow. Find collaborators, discover research positions, and build your academic network."
+      content="ResearchConnect-Connecting the minds that shape tomorrow's science. Find collaborators, discover research positions, and advance your academic career."
     />
     <meta
       name="keywords"
@@ -15,7 +15,7 @@
     <!-- Open Graph (WhatsApp, LinkedIn, Facebook) -->
     <meta
       property="og:title"
-      content="ResearchConnect — Where Scientists Connect & Grow"
+      content="ResearchConnect — Connecting the Minds That Shape Tomorrow's Science""
     />
     <meta
       property="og:description"
@@ -36,14 +36,14 @@
     <meta name="twitter:title" content="ResearchConnect" />
     <meta
       name="twitter:description"
-      content="Where scientists connect and grow."
+      content="Connecting the minds that shape tomorrow's science.""
     />
     <meta charset="UTF-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <title>ResearchConnect</title>
+    <title>ResearchConnect — Where Scientists Connect & Grow</title>
 
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json" />
@@ -63,12 +63,12 @@
     <!-- SEO / share -->
     <meta
       name="description"
-      content="Find collaborators, discover research positions, and build your academic network."
+      content="Connect with researchers, showcase your work, discover collaborations, and advance your academic career."
     />
     <meta property="og:title" content="ResearchConnect" />
     <meta
       property="og:description"
-      content="Where scientists connect and grow."
+      content="Connecting the minds that shape tomorrow's science."
     />
     <meta property="og:type" content="website" />
 
@@ -1635,6 +1635,15 @@
                 <label>H-Index</label
                 ><input id="pHIndex" type="number" placeholder="0" min="0" />
               </div>
+              <div class="form-group">
+                <label>Skills &amp; Interests</label>
+                <div id="skillsTagContainer" style="display:flex;flex-wrap:wrap;gap:6px;min-height:10px;margin-bottom:8px"></div>
+                <div style="display:flex;gap:8px">
+                  <input id="skillsInput" type="text" placeholder="e.g. CRISPR, Machine Learning" style="flex:1" onkeydown="handleSkillKey(event)">
+                  <button type="button" class="btn btn-ghost btn-sm" onclick="addSkillTag()">Add</button>
+                </div>
+                <div style="font-size:11px;color:var(--muted);margin-top:5px">Press Enter or click Add · separate multiple with commas</div>
+              </div>
               <button
                 class="btn btn-primary"
                 onclick="saveProfile()"
@@ -2414,7 +2423,7 @@
             <div class="tags">${(r.researchFields || [])
               .slice(0, 4)
               .map((f) => `<span class="tag tag-blue">${f}</span>`)
-              .join("")}</div>
+              .join("")}${(r.skills || []).slice(0, 3).map(s => `<span class="tag" style="background:rgba(45,212,160,0.15);color:#2dd4a0;border:1px solid rgba(45,212,160,0.3)">${s}</span>`).join("")}</div>
             <div class="stats">
               <span>H-Index: <strong>${r.hIndex || 0}</strong></span>
               <span>Publications: <strong>${r.totalPublications || 0}</strong></span>
@@ -2506,7 +2515,7 @@
           <div class="info">
             <h1>${r.firstName} ${r.lastName}</h1>
             <div class="role">${r.position || "Researcher"} ${r.institution ? "· " + r.institution : ""}</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">${(r.researchFields || []).map((f) => `<span class="tag tag-blue">${f}</span>`).join("")}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">${(r.researchFields || []).map((f) => `<span class="tag tag-blue">${f}</span>`).join("")}${(r.skills || []).map(s => `<span class="tag" style="background:rgba(45,212,160,0.15);color:#2dd4a0;border:1px solid rgba(45,212,160,0.3)">${s}</span>`).join("")}</div>
             <div style="display:flex;gap:20px;font-size:13px;color:var(--muted)">
               <span>H-Index: <strong style="color:var(--text)">${r.hIndex || 0}</strong></span>
               <span>Publications: <strong style="color:var(--text)">${r.totalPublications || 0}</strong></span>
@@ -2977,6 +2986,8 @@
           sv("pBio", u.bio);
           sv("pFields", (u.researchFields || []).join(", "));
           sv("pHIndex", u.hIndex || 0);
+          _skills = u.skills || [];
+          renderSkillTags();
           loadPubs(currentUser.id);
           loadProfileProjects(currentUser.id);
         } catch (e) {
@@ -3140,6 +3151,42 @@
         }
       }
 
+      let _skills = [];
+
+      function renderSkillTags() {
+        const c = document.getElementById('skillsTagContainer');
+        if (!c) return;
+        c.innerHTML = _skills.map((s, i) =>
+          `<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(45,212,160,0.15);color:#2dd4a0;border:1px solid rgba(45,212,160,0.3);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:500;cursor:default">
+            ${s.replace(/</g,'&lt;')}
+            <span onclick="removeSkillTag(${i})" style="cursor:pointer;opacity:0.7;margin-left:2px;font-size:14px;line-height:1" title="Remove">&times;</span>
+          </span>`
+        ).join('');
+      }
+
+      function addSkillTag() {
+        const input = document.getElementById('skillsInput');
+        if (!input) return;
+        const tags = input.value.split(',').map(t => t.trim()).filter(Boolean);
+        tags.forEach(t => {
+          if (t.length <= 50 && !_skills.includes(t) && _skills.length < 30) _skills.push(t);
+        });
+        input.value = '';
+        renderSkillTags();
+      }
+
+      function removeSkillTag(idx) {
+        _skills.splice(idx, 1);
+        renderSkillTags();
+      }
+
+      function handleSkillKey(e) {
+        if (e.key === 'Enter' || e.key === ',') {
+          e.preventDefault();
+          addSkillTag();
+        }
+      }
+
       async function saveProfile() {
         const err = document.getElementById("profileEditError");
         const suc = document.getElementById("profileEditSuccess");
@@ -3158,6 +3205,7 @@
                 .split(",")
                 .map((s) => s.trim())
                 .filter(Boolean),
+              skills: _skills,
               hIndex: +v("pHIndex"),
             }),
           });

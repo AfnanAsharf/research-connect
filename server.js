@@ -32,7 +32,7 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '4mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ─── Rate Limiters ───────────────────────────────────────────────────────────
@@ -137,6 +137,8 @@ const userSchema = new mongoose.Schema({
   h_index:             { type: Number, default: 0 },
   total_publications:  { type: Number, default: 0 },
   profile_completeness:{ type: Number, default: 20 },
+  avatar_data:         { type: Buffer, default: null },
+  avatar_mime:         { type: String, default: '' },
   created_at:          { type: Date, default: Date.now }
 });
 
@@ -240,7 +242,8 @@ function userPublic(u) {
     firstName: u.first_name, lastName: u.last_name,
     institution: u.institution, position: u.position, bio: u.bio,
     researchFields: u.research_fields, hIndex: u.h_index,
-    totalPublications: u.total_publications, profileCompleteness: u.profile_completeness
+    totalPublications: u.total_publications, profileCompleteness: u.profile_completeness,
+    avatarUrl: u.avatar_data ? `/api/profile/avatar/${u._id}` : ''
   };
 }
 
@@ -269,6 +272,48 @@ const auth = (req, res, next) => {
 // ─── Health ───────────────────────────────────────────────────────────────────
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
+// ─── AVATAR ROUTES ────────────────────────────────────────────────────────────
+
+// Public — serve a user's avatar binary (browsers cache it with max-age)
+app.get('/api/profile/avatar/:userId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).select('avatar_data avatar_mime');
+    if (!user || !user.avatar_data) return res.status(404).end();
+    res.set('Content-Type', user.avatar_mime || 'image/jpeg');
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.send(user.avatar_data);
+  } catch { res.status(404).end(); }
+});
+
+// Authenticated — upload a new avatar (base64 data-URL in JSON body)
+app.post('/api/profile/avatar', auth, async (req, res) => {
+  try {
+    const { data } = req.body || {};
+    if (!data || typeof data !== 'string')
+      return badRequest(res, ['Image data is required']);
+
+    const match = data.match(/^data:(image\/(?:jpeg|png|gif|webp));base64,(.+)$/);
+    if (!match)
+      return badRequest(res, ['Invalid image format — only JPEG, PNG, GIF and WebP are allowed']);
+
+    const mime   = match[1];
+    const buffer = Buffer.from(match[2], 'base64');
+    if (buffer.length > 2 * 1024 * 1024)
+      return badRequest(res, ['Image must be 2 MB or smaller']);
+
+    await User.findByIdAndUpdate(req.user.userId, { avatar_data: buffer, avatar_mime: mime });
+    res.json({ message: 'Avatar updated', avatarUrl: `/api/profile/avatar/${req.user.userId}` });
+  } catch (e) { handleError(res, e); }
+});
+
+// Authenticated — delete avatar (revert to initials)
+app.delete('/api/profile/avatar', auth, async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.user.userId, { avatar_data: null, avatar_mime: '' });
+    res.json({ message: 'Avatar removed' });
+  } catch (e) { handleError(res, e); }
+});
 
 // ─── AUTH ROUTES ──────────────────────────────────────────────────────────────
 

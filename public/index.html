@@ -507,6 +507,51 @@
         height: 64px;
         font-size: 22px;
       }
+      .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        border-radius: 50%;
+      }
+      .avatar-upload-wrap {
+        position: relative;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .avatar-upload-wrap .avatar-camera {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: rgba(0,0,0,0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.15s;
+        font-size: 20px;
+        pointer-events: none;
+      }
+      .avatar-upload-wrap:hover .avatar-camera { opacity: 1; }
+      .avatar-upload-wrap .avatar { flex-shrink: 0; }
+      .avatar-remove-btn {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--red);
+        border: 2px solid var(--bg);
+        color: #fff;
+        font-size: 10px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-weight: 700;
+      }
 
       /* ── Progress bar ── */
       .progress-bar {
@@ -1402,7 +1447,12 @@
                     margin-bottom: 20px;
                   "
                 >
-                  <div class="avatar avatar-lg" id="profileAvatar">?</div>
+                  <div class="avatar-upload-wrap" onclick="document.getElementById('avatarFileInput').click()" title="Click to change photo">
+                    <div class="avatar avatar-lg" id="profileAvatar" style="overflow:hidden">?</div>
+                    <div class="avatar-camera">📷</div>
+                    <div class="avatar-remove-btn" id="avatarRemoveBtn" style="display:none" onclick="event.stopPropagation();removeAvatar()" title="Remove photo">✕</div>
+                    <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none" onchange="handleAvatarUpload(this)">
+                  </div>
                   <div>
                     <div
                       style="
@@ -1420,6 +1470,7 @@
                     >
                       —
                     </div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:4px" id="avatarStatus"></div>
                   </div>
                 </div>
                 <div style="margin-bottom: 8px">
@@ -2278,7 +2329,7 @@
               : "";
             return `
             <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;${i < reqs.length - 1 ? "border-bottom:1px solid var(--border)" : ""}">
-              <div class="avatar" style="background:${avatarColor(p?.firstName || "")};flex-shrink:0">${initials(p?.firstName || "?", p?.lastName || "")}</div>
+              ${avatarEl(r.fromUserId, p?.firstName || '', p?.lastName || '')}
               <div style="flex:1;min-width:0">
                 <div style="font-weight:600;font-size:14px;cursor:pointer" onclick="navigate('researcher-profile','${r.fromUserId}')">${name}</div>
                 ${sub ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${sub}</div>` : ""}
@@ -2349,7 +2400,7 @@
               (r) => `
       <div class="card" style="margin-bottom:16px">
         <div class="researcher-card">
-          <div class="avatar" style="background:${avatarColor(r.firstName)};flex-shrink:0">${initials(r.firstName, r.lastName)}</div>
+          ${avatarEl(r.id, r.firstName, r.lastName)}
           <div class="info" style="flex:1">
             <h3 onclick="navigate('researcher-profile','${r.id}')">${r.firstName} ${r.lastName}</h3>
             <div class="meta">${r.position || "—"} ${r.institution ? "· " + r.institution : ""}</div>
@@ -2444,7 +2495,7 @@
       <button class="btn btn-ghost btn-sm" onclick="history.back()" style="margin-bottom:20px">← Back</button>
       <div class="card" style="margin-bottom:24px">
         <div class="profile-header">
-          <div class="avatar avatar-lg" style="background:${avatarColor(r.firstName)}">${initials(r.firstName, r.lastName)}</div>
+          ${avatarEl(r.id, r.firstName, r.lastName, 'avatar-lg')}
           <div class="info">
             <h1>${r.firstName} ${r.lastName}</h1>
             <div class="role">${r.position || "Researcher"} ${r.institution ? "· " + r.institution : ""}</div>
@@ -2728,12 +2779,7 @@
           (a) => `
         <div class="card" style="margin-bottom:14px">
           <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
-            <div class="avatar" style="background:${avatarColor(a.name)};flex-shrink:0">${a.name
-              .split(" ")
-              .map((w) => w[0] || "")
-              .join("")
-              .slice(0, 2)
-              .toUpperCase()}</div>
+            ${avatarEl(a.user_id, (a.name||'').split(' ')[0], (a.name||'').split(' ').slice(1).join(' '))}
             <div style="flex:1;min-width:0">
               <div style="font-weight:600;font-size:15px;margin-bottom:2px">${a.name}</div>
               <div style="color:var(--muted);font-size:13px;margin-bottom:8px">${[a.position, a.institution].filter(Boolean).join(" · ") || "No profile details"}</div>
@@ -2899,10 +2945,16 @@
         try {
           const d = await api("/auth/me");
           const u = d.user;
-          document.getElementById("profileAvatar").textContent = initials(
-            u.firstName,
-            u.lastName,
-          );
+          const pa = document.getElementById("profileAvatar");
+          const rb = document.getElementById("avatarRemoveBtn");
+          if (u.avatarUrl) {
+            pa.innerHTML = `<img src="${u.avatarUrl}?t=${Date.now()}" alt="${initials(u.firstName,u.lastName)}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:50%">`;
+            if (rb) rb.style.display = 'flex';
+          } else {
+            pa.innerHTML = initials(u.firstName, u.lastName);
+            pa.style.background = avatarColor(u.firstName || '');
+            if (rb) rb.style.display = 'none';
+          }
           document.getElementById("profileName").textContent =
             `${u.firstName} ${u.lastName}`;
           document.getElementById("profileRole").textContent =
@@ -2922,6 +2974,58 @@
           loadProfileProjects(currentUser.id);
         } catch (e) {
           console.error(e);
+        }
+      }
+
+      async function handleAvatarUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const statusEl = document.getElementById('avatarStatus');
+        if (file.size > 2 * 1024 * 1024) {
+          if (statusEl) statusEl.textContent = '⚠ Image must be 2 MB or smaller';
+          input.value = '';
+          return;
+        }
+        if (statusEl) statusEl.textContent = 'Uploading…';
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const d = await api('/profile/avatar', {
+              method: 'POST',
+              body: JSON.stringify({ data: e.target.result })
+            });
+            // Update avatar preview immediately
+            const pa = document.getElementById('profileAvatar');
+            if (pa) pa.innerHTML = `<img src="${d.avatarUrl}?t=${Date.now()}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:50%">`;
+            const rb = document.getElementById('avatarRemoveBtn');
+            if (rb) rb.style.display = 'flex';
+            if (statusEl) statusEl.textContent = '✓ Photo updated';
+            setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+          } catch (err) {
+            if (statusEl) statusEl.textContent = '⚠ ' + err.message;
+          }
+          input.value = '';
+        };
+        reader.readAsDataURL(file);
+      }
+
+      async function removeAvatar() {
+        const statusEl = document.getElementById('avatarStatus');
+        if (statusEl) statusEl.textContent = 'Removing…';
+        try {
+          await api('/profile/avatar', { method: 'DELETE' });
+          const u = currentUser || {};
+          const pa = document.getElementById('profileAvatar');
+          if (pa) {
+            pa.innerHTML = initials(u.firstName, u.lastName);
+            pa.style.background = avatarColor(u.firstName || '');
+          }
+          const rb = document.getElementById('avatarRemoveBtn');
+          if (rb) rb.style.display = 'none';
+          if (statusEl) statusEl.textContent = '✓ Photo removed';
+          setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+        } catch (err) {
+          if (statusEl) statusEl.textContent = '⚠ ' + err.message;
         }
       }
 
@@ -3136,12 +3240,7 @@
             .map(
               (c) => `
       <div class="convo-item" onclick="navigate('chat',{id:'${c.userId}',name:'${c.userName}'})">
-        <div class="avatar" style="background:${avatarColor(c.userName)}">${c.userName
-          .split(" ")
-          .map((w) => w[0] || "")
-          .join("")
-          .slice(0, 2)
-          .toUpperCase()}</div>
+        ${avatarEl(c.userId, (c.userName||'').split(' ')[0], (c.userName||'').split(' ').slice(1).join(' '))}
         <div class="convo-info">
           <div class="convo-name">${c.userName}</div>
           <div class="convo-preview">${c.lastMessage || "No messages yet"}</div>
@@ -3162,12 +3261,7 @@
     <button class="btn btn-ghost btn-sm" onclick="navigate('messages')" style="margin-bottom:16px">← Back</button>
     <div class="card" style="padding:0;overflow:hidden">
       <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">
-        <div class="avatar" style="background:${avatarColor(chatWithName)}">${chatWithName
-          ?.split(" ")
-          .map((w) => w[0])
-          .join("")
-          .slice(0, 2)
-          .toUpperCase()}</div>
+        ${avatarEl(chatWithId, (chatWithName||'').split(' ')[0], (chatWithName||'').split(' ').slice(1).join(' '))}
         <div style="font-family:var(--font-head);font-weight:700">${chatWithName}</div>
       </div>
       <div class="chat-wrap">
@@ -3476,6 +3570,18 @@
       }
       function initials(first, last) {
         return ((first?.[0] || "") + (last?.[0] || "")).toUpperCase() || "?";
+      }
+      // Returns an avatar <div> — shows photo if userId has one, otherwise initials
+      function avatarEl(userId, firstName, lastName, extraClass = '', extraStyle = '') {
+        const bg  = avatarColor(firstName || '');
+        const ini = initials(firstName, lastName);
+        const cls = 'avatar' + (extraClass ? ' ' + extraClass : '');
+        const sty = `background:${bg};overflow:hidden;flex-shrink:0${extraStyle ? ';' + extraStyle : ''}`;
+        if (!userId) return `<div class="${cls}" style="${sty}">${ini}</div>`;
+        return `<div class="${cls}" style="${sty}">` +
+          `<img src="/api/profile/avatar/${userId}" alt="${ini}" ` +
+          `onerror="this.parentNode.innerHTML='${ini}'" loading="lazy">` +
+          `</div>`;
       }
       function avatarColor(name) {
         const colors = [
